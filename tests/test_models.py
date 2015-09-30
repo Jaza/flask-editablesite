@@ -4,7 +4,7 @@ import datetime as dt
 
 import pytest
 
-from flask_editablesite.user.models import User, Role
+from flask_editablesite.user.models import User
 from .factories import UserFactory
 
 
@@ -48,11 +48,3 @@ class TestUser:
     def test_full_name(self):
         user = UserFactory(first_name="Foo", last_name="Bar")
         assert user.full_name == "Foo Bar"
-
-    def test_roles(self):
-        role = Role(name='admin')
-        role.save()
-        u = UserFactory()
-        u.roles.append(role)
-        u.save()
-        assert role in u.roles

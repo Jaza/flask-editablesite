@@ -53,6 +53,7 @@ Specifying DB config
 You can specify DB config when the app starts:
 
 ::
+
     export FLASK_EDITABLESITE_DATABASE_URI="postgresql://flask_editablesite:flask_editablesite@localhost:5432/flask_editablesite"; python manage.py server
 
 

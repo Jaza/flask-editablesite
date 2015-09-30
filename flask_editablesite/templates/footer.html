@@ -1,0 +1,21 @@
+<footer>
+  <small>
+  <ul class="company">
+    <li>
+      License:  <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a>
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      <a href="https://github.com/Jaza/flask-editablesite">Source Code on GitHub</a>
+    </li>
+  </ul>
+
+  <ul class="footer-nav">
+    <li>
+      {% if current_user and current_user.is_authenticated() %}
+      Logged in as {{ current_user.full_name_or_email }} [ <a href="{{ url_for('public.logout') }}">Logout</a> ]
+      {% elif login_form %}
+      [ <a href="#loginModal" data-toggle="modal">Login</a> ]
+      {% endif %}
+      </li>
+  </ul>
+  </small>
+</footer>

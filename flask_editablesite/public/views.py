@@ -2,7 +2,7 @@
 """Public section, including homepage and signup."""
 from flask import current_app as app
 from flask import (Blueprint, request, render_template, flash, url_for,
-                    redirect, session)
+                    redirect, session, send_from_directory)
 from flask_login import (login_user, login_required, logout_user,
                          current_user)
 
@@ -52,3 +52,11 @@ def logout():
     logout_user()
     flash('You are logged out.', 'info')
     return redirect(url_for('public.home'))
+
+
+@blueprint.route('/robots.txt')
+@blueprint.route('/sitemap.xml')
+def static_from_root():
+    # Thanks to:
+    # http://stackoverflow.com/a/14054039/2066849
+    return send_from_directory(app.static_folder, request.path[1:])

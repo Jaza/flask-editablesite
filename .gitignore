@@ -49,4 +49,3 @@ env/
 log
 flask_editablesite/static/uploads
 flask_editablesite/static/cache
-.webassets-cache

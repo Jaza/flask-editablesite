@@ -84,8 +84,6 @@ class Config(object):
         '\n'
         '%(message)s\n')
 
-    ASSETS_CACHE = os.path.abspath(os.path.join(PROJECT_ROOT, '.webassets-cache'))
-
 
 class ProdConfig(Config):
     """Production configuration."""

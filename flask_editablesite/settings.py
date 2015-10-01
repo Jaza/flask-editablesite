@@ -84,6 +84,15 @@ class Config(object):
         '\n'
         '%(message)s\n')
 
+    EDITABLE_MODELS = {
+        'short_text_content_block': {
+            'classpath': 'flask_editablesite.contentblock.models.ShortTextContentBlock',
+            'identifier_field': 'slug',
+            'title_field': 'title',
+            'text_fields': ['content'],
+        },
+    }
+
 
 class ProdConfig(Config):
     """Production configuration."""

@@ -16,7 +16,7 @@ from flask_editablesite.extensions import (
     debug_toolbar,
     thumb,
 )
-from flask_editablesite import public
+from flask_editablesite import public, editable
 
 
 def create_app(config_object=ProdConfig):
@@ -49,6 +49,7 @@ def register_extensions(app):
 
 def register_blueprints(app):
     app.register_blueprint(public.views.blueprint)
+    app.register_blueprint(editable.views.blueprint)
     return None
 
 
@@ -63,9 +64,16 @@ def register_errorhandlers(app):
 
 
 def register_loggers(app):
+    import logging
+
+    log_formatter = logging.Formatter('%(levelname)s %(asctime)s %(message)s', '[%Y-%m-%d %H:%M:%S]')
+
+    if len(app.logger.handlers):
+        app.logger.handlers[0].setFormatter(log_formatter)
+
     if not app.debug:
-        import logging
         stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(log_formatter)
         app.logger.addHandler(stream_handler)
         app.logger.setLevel(logging.INFO)
         app.logger.info('flask_editablesite startup')

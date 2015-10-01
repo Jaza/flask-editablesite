@@ -1,12 +1,29 @@
-
 {% extends "layout.html" %}
+
+{% import 'macros/short_text.html' as short_text %}
+
 {% block content %}
 <!-- Main jumbotron for a primary marketing message or call to action -->
 <div class="jumbotron">
 
   <h1>Welcome to {{ config.SITE_NAME }}</h1>
 
-  <p>This is a starter Flask template. It includes Bootstrap 3, jQuery 2, Flask-SQLAlchemy, WTForms, and various testing utilities out of the box.</p>
+  {% with model_name = 'short_text_content_block' %}
+  {% with field_name = 'content' %}
+  {% with model_identifier = 'site-byline' %}
+  {% if stc_blocks[model_identifier].form is defined %}
+  {% with form = stc_blocks[model_identifier].form %}
+
+  {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title) }}
+
+  {% endwith %}
+  {% else %}
+  <p>{{ stc_blocks[model_identifier].content }}</p>
+  {% endif %}
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
+
   <p><a href="https://github.com/sloria/cookiecutter-flask" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
 </div><!-- /.jumbotron -->
 

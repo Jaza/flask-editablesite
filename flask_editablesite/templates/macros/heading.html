@@ -1,0 +1,17 @@
+{% macro field(field, class='h2', placeholder='Type your title', label_class='control-label hidden') %}
+
+<div class="form-group {% if field.errors %} has-error{% endif %}">
+  <label for="{{ field.id }}">{{field.label}}</label>
+
+  {{field(class=class, placeholder=placeholder, **kwargs)|safe}}
+
+  {%- if field.errors %}
+    {%- for error in field.errors %}
+      <p class="help-block">{{error}}</p>
+    {%- endfor %}
+  {%- elif field.description -%}
+    <p class="help-block">{{field.description|safe}}</p>
+  {%- endif %}
+</div>
+{% endmacro %}
+

@@ -8,6 +8,8 @@ from flask_login import (login_user, login_required, logout_user,
 
 from flask_editablesite.extensions import login_manager
 from flask_editablesite.user.models import User
+from flask_editablesite.contentblock.models import ShortTextContentBlock
+from flask_editablesite.editable.forms import TextEditForm
 from flask_editablesite.public.forms import LoginForm
 from flask_editablesite.utils import flash_errors
 from flask_editablesite.database import db
@@ -26,9 +28,41 @@ def load_user(id):
 
 @blueprint.route("/")
 def home():
+    if current_user.is_authenticated() and (not current_user.active):
+        logout_user()
+
     login_form = (not current_user.is_authenticated()) and LoginForm() or None
 
-    return render_template("public/home.html", login_form=login_form)
+    stc_blocks = {
+            o.slug: {
+                'title': o.title,
+                'content': o.content,
+                'model': o}
+        for o in ShortTextContentBlock.default_content().values()}
+
+    for o in (ShortTextContentBlock.query
+            .filter_by(active=True)
+            .all()):
+        stc_blocks[o.slug] = {
+            'title': o.title,
+            'content': o.content,
+            'model': o}
+
+    if current_user.is_authenticated():
+        for k in stc_blocks.keys():
+            form = TextEditForm(
+                obj=stc_blocks[k]['model'])
+
+            form.content.label = stc_blocks[k]['title']
+
+            stc_blocks[k]['form'] = form
+
+    template_vars = dict(
+        login_form=login_form,
+        stc_blocks=stc_blocks)
+
+    return render_template("public/home.html",
+                           **template_vars)
 
 
 @blueprint.route("/login/", methods=["POST"])

@@ -48,3 +48,16 @@
 </div>
 {% endblock %}
 
+{% block js %}
+{% if not login_form %}
+{% assets "js_admin" %}
+  <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+{% endassets %}
+{% endif %}
+
+{% if config.GOOGLE_ANALYTICS_ACCOUNT_ID %}
+{% with google_analytics_account_id = config.GOOGLE_ANALYTICS_ACCOUNT_ID %}
+{% include 'google_analytics.html' %}
+{% endwith %}
+{% endif %}
+{% endblock %}

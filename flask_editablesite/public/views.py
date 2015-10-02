@@ -40,18 +40,23 @@ def home():
                 'model': o}
         for o in ShortTextContentBlock.default_content().values()}
 
-    for o in (ShortTextContentBlock.query
-            .filter_by(active=True)
-            .all()):
-        stc_blocks[o.slug] = {
-            'title': o.title,
-            'content': o.content,
-            'model': o}
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        for slug, o in session.get('short_text_content_block', {}).items():
+            stc_blocks[slug] = {
+                'title': o['title'],
+                'content': o['content']}
+    else:
+        for o in (ShortTextContentBlock.query
+                .filter_by(active=True)
+                .all()):
+            stc_blocks[o.slug] = {
+                'title': o.title,
+                'content': o.content}
 
     if current_user.is_authenticated():
         for k in stc_blocks.keys():
             form = TextEditForm(
-                obj=stc_blocks[k]['model'])
+                content=stc_blocks[k]['content'])
 
             form.content.label = stc_blocks[k]['title']
 

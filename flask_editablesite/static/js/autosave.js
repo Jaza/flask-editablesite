@@ -1,0 +1,130 @@
+(function($, window) {
+
+  $('form[data-autosave-url]').each(function() {
+    var $this = $(this);
+    var autosaveUrl = $(this).attr('data-autosave-url');
+
+    // How long to wait (in milliseconds) for a user to stop typing,
+    // before attempting to do an autosave.
+    var pendingDelayInMs = 2000;
+
+    var elIds = '#content';
+
+    elIdsOptional = '';
+
+    $(this).find(':input, .medium-editable').on('input', function(e) {
+      // Submission content is required by server-side validation,
+      // so don't try to autosave if it's not set yet.
+      if (!$this.find(elIds).val() && !$this.find(elIdsOptional).length) {
+        $this.find('.autosave-status')
+          .html('No autosave while content is blank')
+          .removeClass('alert-success')
+          .removeClass('alert-danger')
+          .addClass('alert-warning');
+      }
+
+      // Don't autosave now if another autosave is already in progress.
+      if (($this.find(elIds).val() || $this.find(elIdsOptional).length) && !$this.attr('data-autosave-inprogress')) {
+        // Restart the 'pending' timer from right now.
+        $this.attr('data-autosave-pending', moment().format('x'));
+
+        // While we're pending, alert the user that they have
+        // unsaved changes at this time.
+        if (!($this.find('.autosave-status').html() == 'Unsaved changes')) {
+          $this.find('.autosave-status')
+            .html('Unsaved changes')
+            .removeClass('alert-success')
+            .removeClass('alert-danger')
+            .addClass('alert-warning');
+        }
+
+        // Every 'x' ms (determined by pendingDelayInMs), see if
+        // we can do an autosave.
+        setTimeout(
+          function() {
+            var lastPendingTimestamp = parseInt($this.attr('data-autosave-pending'));
+            var nowTimestamp = parseInt(moment().format('x'));
+
+            // If more than 'x' ms has passed since the user last
+            // inputted something, we can stop pending.
+            if ((nowTimestamp - lastPendingTimestamp) > pendingDelayInMs) {
+              $this.removeAttr('data-autosave-pending');
+            }
+
+            if (!$this.attr('data-autosave-pending') && !$this.attr('data-autosave-inprogress')) {
+              $this.attr('data-autosave-inprogress', '1');
+
+              // Alert the user that an autosave is now in progress.
+              if (!($this.find('.autosave-status').html() == 'Saving')) {
+                $this.find('.autosave-status')
+                  .html('Saving')
+                  .removeClass('alert-success')
+                  .addClass('alert-warning');
+              }
+
+              var postData = $this.serializeArray();
+
+              // Attempt to perform the autosave via AJAX.
+              $.ajax({
+                url: autosaveUrl,
+                type: 'POST',
+                data: postData,
+                success: function(data, textStatus, jqXHR) {
+                  $this.removeAttr('data-autosave-inprogress');
+
+                  if (data == 'OK') {
+                    // Yay! Autosave worked.
+                    if (!($this.find('.autosave-status').html() == 'Saved')) {
+                      $this.find('.autosave-status')
+                        .html('Saved')
+                        .removeClass('alert-warning')
+                        .addClass('alert-success');
+                    }
+                  }
+                  else {
+                    // Autosave failed because of some validation
+                    // failing in server submit handler.
+                    $this.find('.autosave-status')
+                      .html('Autosave failed: ' + data)
+                      .removeClass('alert-warning')
+                      .addClass('alert-danger');
+                  }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                  $this.removeAttr('data-autosave-inprogress');
+
+                  var errorMsg = 'Autosave failed: ';
+                  if (errorThrown) {
+                    // Autosave failed due to server returning
+                    // bad status (probably 500 error).
+                    errorMsg += 'server encountered an error';
+                  }
+                  else {
+                    // Autosave failed due to server not being
+                    // reached (probably network error).
+                    errorMsg += 'couldn\'t connect to server';
+                  }
+
+                  $this.find('.autosave-status')
+                    .html(errorMsg)
+                    .removeClass('alert-warning')
+                    .addClass('alert-danger');
+                }});
+            }
+          },
+          pendingDelayInMs);
+        }
+      });
+
+    // Toggle autosave status box visibility depending on when an
+    // input box has focus.
+    $(this).find(':input, .medium-editable')
+      .focus(function(e) {
+        $this.find('.autosave-status-wrapper').show();
+        })
+      .blur(function(e) {
+        $this.find('.autosave-status-wrapper').hide();
+      });
+  });
+
+}).call(this, jQuery, window);

@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 
 from flask import current_app as app
 from flask import (abort, Blueprint, flash, url_for, redirect, request,
-                   Response)
+                   session, Response)
 from flask_login import login_required, current_user
 
 from flask_editablesite.extensions import db
@@ -16,20 +16,25 @@ blueprint = Blueprint('editable', __name__, static_folder="../static")
 
 def text_update_func(model_name, field_name, model_identifier, is_autosave=False):
     try:
-        model_classpath = app.config['EDITABLE_MODELS'][model_name]['classpath']
+        v = app.config['EDITABLE_MODELS'][model_name]
+    except KeyError:
+        abort(404)
+
+    if not('text_fields' in v) or not(field_name in v['text_fields']):
+        abort(404)
+
+    try:
+        model_classpath = v['classpath']
     except KeyError:
         raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
 
-    if not('text_fields' in app.config['EDITABLE_MODELS'][model_name]) or not(field_name in app.config['EDITABLE_MODELS'][model_name]['text_fields']):
-        raise ValueError('No text field "%s" defined in app config\'s EDITABLE_MODELS for model name "%s"' % (field_name, model_name))
-
     try:
-        identifier_field_name = app.config['EDITABLE_MODELS'][model_name]['identifier_field']
+        identifier_field_name = v['identifier_field']
     except KeyError:
         raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
 
     try:
-        title_field_name = app.config['EDITABLE_MODELS'][model_name]['title_field']
+        title_field_name = v['title_field']
     except KeyError:
         raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
 
@@ -53,9 +58,16 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
         identifier_field_name: model_identifier,
         'active': True}
 
-    model = (model_class.query
-        .filter_by(**filter_by_kwargs)
-        .first())
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        model_dict = (session.get(model_name, {})
+            .get(model_identifier, None))
+
+        if model_dict:
+            model = model_class(**model_dict)
+    else:
+        model = (model_class.query
+            .filter_by(**filter_by_kwargs)
+            .first())
 
     if not model:
         try:
@@ -67,10 +79,22 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
 
     if form.validate_on_submit():
         content = form.content.data
-        setattr(model, field_name, content)
 
         try:
-            model.save()
+            if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+                if session.get(model_name) == None:
+                    session[model_name] = {}
+
+                if not (session.get(model_name, {})
+                        .get(model_identifier, None)):
+                    session[model_name][model_identifier] = {
+                        title_field_name: getattr(model, title_field_name)}
+
+                session[model_name][model_identifier][field_name] = content
+            else:
+                setattr(model, field_name, content)
+                model.save()
+
             app.logger.info('{0} updated: {1}; user: {2}'.format(model_name.replace('_', ' ').capitalize(), model, current_user))
 
             if is_autosave:
@@ -81,12 +105,12 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
             db.session.rollback()
 
             if is_autosave:
-                return Response('ERROR')
+                return Response('ERROR', 400)
             else:
                 flash("Error updating {0}.".format(getattr(model, title_field_name)), 'danger')
     else:
         if is_autosave:
-            return Response('ERROR')
+            return Response('ERROR', 400)
         else:
             flash_errors(form)
 

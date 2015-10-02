@@ -57,6 +57,7 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
     filter_by_kwargs = {
         identifier_field_name: model_identifier,
         'active': True}
+    model = None
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
         model_dict = (session.get(model_name, {})

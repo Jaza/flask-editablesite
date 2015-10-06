@@ -1,6 +1,11 @@
 {% macro field(f, field_id='', label_class="control-label hidden") %}
 <div class="form-group {% if f.errors %} has-error{% endif %}">
   <label for="{{ field_id }}">{{ f.label }}</label>
+
+  {% if f.flags.required and not required in kwargs %}
+  {% set kwargs = dict(required=True, **kwargs) %}
+  {% endif %}
+
   {{f(class="form-control", id=field_id, **kwargs)|safe}}
 
   <div id="{{ field_id }}-wysiwyg" class="dante-editable editable-wrapper" style="min-height: 34px"></div>

@@ -1,21 +1,19 @@
 (function($, window) {
 
-  $('form[data-autosave-url]').each(function() {
+  $('form[data-autosave-url][data-autosave-field-id]').each(function() {
     var $this = $(this);
     var autosaveUrl = $(this).attr('data-autosave-url');
+    var elId = '#' + $(this).attr('data-autosave-field-id');
+    var isElOptional = !($(this).attr('required'));
 
     // How long to wait (in milliseconds) for a user to stop typing,
     // before attempting to do an autosave.
     var pendingDelayInMs = 2000;
 
-    var elIds = '#content';
-
-    elIdsOptional = '';
-
-    $(this).find(':input, .medium-editable').on('input', function(e) {
+    $(this).find(':input, .dante-editable').on('input', function(e) {
       // Submission content is required by server-side validation,
       // so don't try to autosave if it's not set yet.
-      if (!$this.find(elIds).val() && !$this.find(elIdsOptional).length) {
+      if (!$this.find(elId).val() && !isElOptional) {
         $this.find('.autosave-status')
           .html('No autosave while content is blank')
           .removeClass('alert-success')
@@ -24,7 +22,7 @@
       }
 
       // Don't autosave now if another autosave is already in progress.
-      if (($this.find(elIds).val() || $this.find(elIdsOptional).length) && !$this.attr('data-autosave-inprogress')) {
+      if (($this.find(elId).val() || isElOptional) && !$this.attr('data-autosave-inprogress')) {
         // Restart the 'pending' timer from right now.
         $this.attr('data-autosave-pending', moment().format('x'));
 
@@ -118,7 +116,7 @@
 
     // Toggle autosave status box visibility depending on when an
     // input box has focus.
-    $(this).find(':input, .medium-editable')
+    $(this).find(':input, .dante-editable')
       .focus(function(e) {
         $this.find('.autosave-status-wrapper').show();
         })

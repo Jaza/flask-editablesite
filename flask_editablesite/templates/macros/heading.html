@@ -1,4 +1,4 @@
-{% macro field(field, class='h2', placeholder='Type your title', label_class='control-label hidden', wrap_element_start='', wrap_element_end='') %}
+{% macro field(field, field_id='', class='h2', placeholder='Type your title', label_class='control-label hidden', wrap_element_start='', wrap_element_end='') %}
 
 <div class="form-group {% if field.errors %} has-error{% endif %}">
   <label for="{{ field.id }}">{{field.label}}</label>
@@ -7,7 +7,11 @@
   {{ wrap_element_start|safe }}
   {%- endif %}
 
-  {{field(class=class, placeholder=placeholder, **kwargs)|safe}}
+  {% if field.flags.required and not required in kwargs %}
+  {% set kwargs = dict(required=True, **kwargs) %}
+  {% endif %}
+
+  {{field(class=class, id=field_id, placeholder=placeholder, **kwargs)|safe}}
 
   {%- if wrap_element_end %}
   {{ wrap_element_end|safe }}

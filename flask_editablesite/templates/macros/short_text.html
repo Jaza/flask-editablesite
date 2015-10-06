@@ -2,11 +2,13 @@
 
 {% macro form(model_name, field_name, model_identifier, form, class='h2', placeholder='Type your title', wrap_element_start='', wrap_element_end='') %}
 
-<form id="short-text-form-{{ model_name }}-{{ field_name }}-{{ model_identifier }}" method="POST" class="form-editable" action="{{ url_for('editable.text_update', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" data-autosave-url="{{ url_for('editable.text_update_autosave', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}">
+{% with field_id = (model_name + '-' + field_name + '-' + model_identifier) %}
+
+<form id="short-text-form-{{ field_id }}" method="POST" class="form-editable" action="{{ url_for('editable.text_update', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" data-autosave-url="{{ url_for('editable.text_update_autosave', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" data-autosave-field-id="{{ field_id }}">
   {{ form.hidden_tag() }}
 
   <div class="title-image-wrapper"><div class="editable-wrapper">
-    {{ heading.field(form.content, class=class, placeholder=placeholder, wrap_element_start=wrap_element_start, wrap_element_end=wrap_element_end) }}
+    {{ heading.field(form.content, field_id=field_id, class=class, placeholder=placeholder, wrap_element_start=wrap_element_start, wrap_element_end=wrap_element_end) }}
   </div></div>
 
   <div class="form-editable-button">
@@ -15,4 +17,7 @@
 
   {% include 'autosave_status.html' %}
 </form>
+
+{% endwith %}
+
 {% endmacro %}

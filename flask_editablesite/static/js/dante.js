@@ -30,23 +30,22 @@
     editor.start();
 
     $('body').on('input', elem_jq, function(event) {
-      var c = editor.cleanContents(elem_jq
-          .find('.section-inner')
-          .clone())
-        .html()
-        .replace(/\<br\>\<\/p\>/g, '</p>')
-        .replace(/ class=\"[^\"]+\"/g, '');
+      var c = editor.cleanContents(
+        elem_jq.find('.section-inner')
+          .clone());
 
-      ta.val(c)
-        .trigger('keyup');
+      if (typeof c !== 'undefined') {
+        c = c.html()
+          .replace(/\<br\>\<\/p\>/g, '</p>')
+          .replace(/ class=\"[^\"]+\"/g, '');
+
+        ta.val(c)
+          .trigger('keyup');
+      }
     });
 
     ta.hide();
-    /*$('body').on('blur keyup paste', ta, updateDanteFromTextareas);
-
-    if (ta.val()) {
-      elem_jq.trigger('click');
-    }*/
+    $('body').on('blur keyup paste', ta, updateDanteFromTextareas);
   });
 
 }).call(this, jQuery, window);

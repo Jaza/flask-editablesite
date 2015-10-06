@@ -37,6 +37,18 @@ class ShortTextContentBlock(SurrogatePK, Slugged, TimeStamped, Confirmable, Mode
         slug = slugify(title, to_lower=True)
         ret[slug] = cls(title=title, slug=slug, content='A template for building a small marketing web site in Flask where all content is live editable.', active=True)
 
+        title = 'Site byline link title'
+        slug = slugify(title, to_lower=True)
+        ret[slug] = cls(title=title, slug=slug, content='Learn more', active=True)
+
+        title = 'Site byline link URL'
+        slug = slugify(title, to_lower=True)
+        ret[slug] = cls(title=title, slug=slug, content='https://github.com/Jaza/flask-editablesite', active=True)
+
+        title = 'About title'
+        slug = slugify(title, to_lower=True)
+        ret[slug] = cls(title=title, slug=slug, content='About', active=True)
+
         return ret
 
 
@@ -61,6 +73,24 @@ class RichTextContentBlock(SurrogatePK, Slugged, TimeStamped, Confirmable, Model
 
     def __repr__(self):
         return self.title
+
+    @classmethod
+    def default_content(cls):
+        ret = {}
+
+        title = 'About text (left column)'
+        slug = slugify(title, to_lower=True)
+        ret[slug] = cls(title=title, slug=slug, content='<p>Grkjg rhekjgreh gkje hgkrejgh erkjgerh gjkerhg kejrg herkjgehr kgjerhg kjreg herkjgehr kgjerh gkjerhg kejrgh erkjgehr kjgerh gkjerhg erkjg herkjg ehr jgkerh jgkreg.</p>', active=True)
+
+        title = 'About text (right column)'
+        slug = slugify(title, to_lower=True)
+        ret[slug] = cls(title=title, slug=slug, content='<p>Jkjg rekgre gkjg hkjrgher kjgrhe gkjerhg ekrjgh erkjgeh gkjergh erkjghe rkjgerh gkejrg herkjghre kjgerh gkjerhg erkjg herkgj.</p>', active=True)
+
+        title = 'About text (below columns)'
+        slug = slugify(title, to_lower=True)
+        ret[slug] = cls(title=title, slug=slug, content='<p>Vkgjre kgjreh gkjregh erkjgehr kgjeh gerkjg.</p>', active=True)
+
+        return ret
 
 
 event.listen(RichTextContentBlock, 'before_insert', update_timestamps_before_insert)

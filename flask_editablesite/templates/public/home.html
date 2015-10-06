@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% import 'macros/short_text.html' as short_text %}
+{% import 'macros/rich_text.html' as rich_text %}
 
 {% block content %}
 <!-- Main jumbotron for a primary marketing message or call to action -->
@@ -14,7 +15,7 @@
   {% if stc_blocks[model_identifier].form is defined %}
   {% with form = stc_blocks[model_identifier].form %}
 
-  {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title) }}
+  {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<p>', wrap_element_end='</p>') }}
 
   {% endwith %}
   {% else %}
@@ -24,10 +25,134 @@
   {% endwith %}
   {% endwith %}
 
-  <p><a href="https://github.com/sloria/cookiecutter-flask" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+  {% with model_name = 'short_text_content_block' %}
+  {% with field_name = 'content' %}
+  {% with model_identifier = 'site-byline-link-title' %}
+  {% if stc_blocks[model_identifier].form is defined %}
+  {% with form = stc_blocks[model_identifier].form %}
+
+  {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<p><span class="btn btn-primary btn-large">', wrap_element_end=' &raquo;</span></p>') }}
+
+  {% endwith %}
+  {% else %}
+  <p><a href="{{ stc_blocks['site-byline-link-url'].content }}" class="btn btn-primary btn-large">{{ stc_blocks[model_identifier].content }} &raquo;</a></p>
+  {% endif %}
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
+
+  {% with model_name = 'short_text_content_block' %}
+  {% with field_name = 'content' %}
+  {% with model_identifier = 'site-byline-link-url' %}
+  {% if stc_blocks[model_identifier].form is defined %}
+  {% with form = stc_blocks[model_identifier].form %}
+
+  {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<p>', wrap_element_end='</p>') }}
+
+  {% endwith %}
+  {% endif %}
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
 </div><!-- /.jumbotron -->
 
 <div class="body-content">
+  <div class="row">
+    <div class="col-sm-12">
+
+  {% with model_name = 'short_text_content_block' %}
+  {% with field_name = 'content' %}
+  {% with model_identifier = 'about-title' %}
+  {% if stc_blocks[model_identifier].form is defined %}
+  {% with form = stc_blocks[model_identifier].form %}
+
+  {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<h2>', wrap_element_end='</h2>') }}
+
+  {% endwith %}
+  {% else %}
+  <div class="short-text-content">
+  <h2>{{ stc_blocks[model_identifier].content }}</h2>
+  </div>
+  {% endif %}
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-6">
+
+  {% with model_name = 'rich_text_content_block' %}
+  {% with field_name = 'content' %}
+  {% with model_identifier = 'about-text-left-column' %}
+  {% if rtc_blocks[model_identifier].form is defined %}
+  {% with form = rtc_blocks[model_identifier].form %}
+
+  {{ rich_text.form(model_name, field_name, model_identifier, form, placeholder=rtc_blocks[model_identifier].title) }}
+
+  {% endwith %}
+  {% else %}
+  <div class="rich-text-content">
+  {{ rtc_blocks[model_identifier].content|safe }}
+  </div>
+  {% endif %}
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
+
+    </div>
+
+    <div class="col-sm-6">
+
+  {% with model_name = 'rich_text_content_block' %}
+  {% with field_name = 'content' %}
+  {% with model_identifier = 'about-text-right-column' %}
+  {% if rtc_blocks[model_identifier].form is defined %}
+  {% with form = rtc_blocks[model_identifier].form %}
+
+  {{ rich_text.form(model_name, field_name, model_identifier, form, placeholder=rtc_blocks[model_identifier].title) }}
+
+  {% endwith %}
+  {% else %}
+  <div class="rich-text-content">
+  {{ rtc_blocks[model_identifier].content|safe }}
+  </div>
+  {% endif %}
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+
+  <div class="text-center">
+  {% with model_name = 'rich_text_content_block' %}
+  {% with field_name = 'content' %}
+  {% with model_identifier = 'about-text-below-columns' %}
+  {% if rtc_blocks[model_identifier].form is defined %}
+  {% with form = rtc_blocks[model_identifier].form %}
+
+  {{ rich_text.form(model_name, field_name, model_identifier, form, placeholder=rtc_blocks[model_identifier].title) }}
+
+  {% endwith %}
+  {% else %}
+  <div class="rich-text-content">
+  {{ rtc_blocks[model_identifier].content|safe }}
+  </div>
+  {% endif %}
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
+  </div>
+
+    </div>
+  </div>
+
   <div class="row">
     <div class="col-lg-4">
       <h2><i class="fa fa-code"></i> Bootstrap 3</h2>
@@ -46,6 +171,14 @@
     </div>
   </div><!-- /.row -->
 </div>
+{% endblock %}
+
+{% block css_before %}
+{% if not login_form %}
+{% assets "css_admin" %}
+  <link rel="stylesheet" href="{{ ASSET_URL }}">
+{% endassets %}
+{% endif %}
 {% endblock %}
 
 {% block js %}

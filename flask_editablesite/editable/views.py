@@ -8,7 +8,7 @@ from flask import (abort, Blueprint, flash, url_for, redirect, request,
 from flask_login import login_required, current_user
 
 from flask_editablesite.extensions import db
-from flask_editablesite.editable.forms import TextEditForm
+from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm
 
 
 blueprint = Blueprint('editable', __name__, static_folder="../static")
@@ -20,7 +20,11 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
     except KeyError:
         abort(404)
 
-    if not('text_fields' in v) or not(field_name in v['text_fields']):
+    if ('long_text_fields' in v) and (field_name in v['long_text_fields']):
+        is_long_text = True
+    elif ('text_fields' in v) and (field_name in v['text_fields']):
+        is_long_text = False
+    else:
         abort(404)
 
     try:
@@ -76,7 +80,7 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
         except KeyError:
             abort(404)
 
-    form = TextEditForm()
+    form = is_long_text and LongTextEditForm() or TextEditForm()
 
     if form.validate_on_submit():
         content = form.content.data

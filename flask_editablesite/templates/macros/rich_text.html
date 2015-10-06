@@ -1,0 +1,16 @@
+{% import 'macros/dante.html' as dante %}
+
+{% macro form(model_name, field_name, model_identifier, form, placeholder='Type your content') %}
+
+<form id="rich-text-form-{{ model_name }}-{{ field_name }}-{{ model_identifier }}" method="POST" class="form-editable" action="{{ url_for('editable.text_update', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" data-autosave-url="{{ url_for('editable.text_update_autosave', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}">
+  {{ form.hidden_tag() }}
+
+  {{ dante.field(form.content, field_id=model_identifier) }}
+
+  <div class="form-editable-button">
+  <button type="submit" class="btn btn-default">Update</button>
+  </div>
+
+  {% include 'autosave_status.html' %}
+</form>
+{% endmacro %}

@@ -1,0 +1,47 @@
+/* EDITABLE */
+
+.form-editable label {
+  display: none;
+}
+
+.form-editable-button {
+  margin-bottom: 40px;
+}
+
+.title-image-wrapper {
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+}
+
+.edit-icon-wrapper {
+  position: absolute;
+  top: 0.7em;
+  left: -2.5em;
+  color: #999;
+}
+
+.edit-icon-dante {
+  left: -1.5em;
+}
+
+.form-editable input[type=text] {
+  background-color: transparent;
+  width: 100%;
+}
+
+.form-editable span input[type=text] {
+  width: 50%;
+}
+
+.form-editable input[type=text], .dante-editable {
+  border: 1px solid transparent;
+}
+
+.form-editable input[type=text].active, .dante-editable.active {
+  border: 1px dotted #999;
+}
+
+.postArticle .layoutSingleColumn {
+  width: auto;
+}

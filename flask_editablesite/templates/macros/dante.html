@@ -1,0 +1,16 @@
+{% macro field(f, field_id='', label_class="control-label hidden") %}
+<div class="form-group {% if f.errors %} has-error{% endif %}">
+  <label for="{{ field_id }}">{{ f.label }}</label>
+  {{f(class="form-control", id=field_id, **kwargs)|safe}}
+
+  <div id="{{ field_id }}-wysiwyg" class="dante-editable editable-wrapper" style="min-height: 34px"></div>
+
+  {%- if f.errors %}
+    {%- for error in f.errors %}
+      <p class="help-block">{{error}}</p>
+    {%- endfor %}
+  {%- elif f.description -%}
+    <p class="help-block">{{f.description|safe}}</p>
+  {%- endif %}
+</div>
+{% endmacro %}

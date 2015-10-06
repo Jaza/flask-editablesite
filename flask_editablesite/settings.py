@@ -91,6 +91,12 @@ class Config(object):
             'title_field': 'title',
             'text_fields': ['content'],
         },
+        'rich_text_content_block': {
+            'classpath': 'flask_editablesite.contentblock.models.RichTextContentBlock',
+            'identifier_field': 'slug',
+            'title_field': 'title',
+            'long_text_fields': ['content'],
+        },
     }
 
 

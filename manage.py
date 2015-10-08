@@ -7,6 +7,7 @@ from flask_migrate import MigrateCommand
 
 from flask_editablesite.app import create_app
 from flask_editablesite.user.commands import CreateUser
+from flask_editablesite.editable.commands import DownloadSampleImages
 from flask_editablesite.user.models import User
 from flask_editablesite.settings import DevConfig, ProdConfig
 from flask_editablesite.database import db
@@ -43,6 +44,7 @@ manager.add_command('db', MigrateCommand)
 manager.add_command("urls", ShowUrls())
 manager.add_command("clean", Clean())
 manager.add_command("createuser", CreateUser())
+manager.add_command("downloadsampleimages", DownloadSampleImages())
 
 if __name__ == '__main__':
     manager.run()

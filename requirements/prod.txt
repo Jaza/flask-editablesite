@@ -50,3 +50,8 @@ Flask-thumbnails==0.2.1
 
 # Uploads
 -e git+http://github.com/justanr/Flask-Transfer@47a6cf7#egg=flask_transfer
+
+# Scraping
+beautifulsoup4==4.4.1
+requests
+clint==0.5.1

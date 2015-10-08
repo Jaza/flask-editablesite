@@ -1,6 +1,12 @@
 {% macro field(field, field_id='', class='h2', placeholder='Type your title', label_class='control-label hidden', wrap_element_start='', wrap_element_end='') %}
 
-<div class="form-group {% if field.errors %} has-error{% endif %}">
+{% if wrap_element_start == '<span>' %}
+  {% set wrap_el_type = 'span' %}
+{% else %}
+  {% set wrap_el_type = 'div' %}
+{% endif %}
+
+<{{ wrap_el_type }} class="form-group {% if field.errors %} has-error{% endif %}">
   <label for="{{ field.id }}">{{field.label}}</label>
 
   {%- if wrap_element_start %}
@@ -24,6 +30,6 @@
   {%- elif field.description -%}
     <p class="help-block">{{field.description|safe}}</p>
   {%- endif %}
-</div>
+</{{ wrap_el_type }}>
 {% endmacro %}
 

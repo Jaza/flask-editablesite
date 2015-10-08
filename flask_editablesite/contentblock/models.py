@@ -33,6 +33,10 @@ class ShortTextContentBlock(SurrogatePK, Slugged, TimeStamped, Confirmable, Mode
     def default_content(cls):
         ret = {}
 
+        title = 'Site welcome prefix'
+        slug = slugify(title, to_lower=True)
+        ret[slug] = cls(title=title, slug=slug, content='Welcome to', active=True)
+
         title = 'Site byline'
         slug = slugify(title, to_lower=True)
         ret[slug] = cls(title=title, slug=slug, content='A template for building a small marketing web site in Flask where all content is live editable.', active=True)

@@ -7,7 +7,25 @@
 <!-- Main jumbotron for a primary marketing message or call to action -->
 <div class="jumbotron">
 
-  <h1>Welcome to {{ config.SITE_NAME }}</h1>
+  <h1 class="text-center">
+    {% with model_name = 'short_text_content_block' %}
+    {% with field_name = 'content' %}
+    {% with model_identifier = 'site-welcome-prefix' %}
+    {% if stc_blocks[model_identifier].form is defined %}
+    {% with form = stc_blocks[model_identifier].form %}
+
+    {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<span>', wrap_element_end='</span>') }}
+
+    {% endwith %}
+    {% else %}
+    {{ stc_blocks[model_identifier].content }}
+    {% endif %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+
+    {{ config.SITE_NAME }}
+  </h1>
 
   {% with model_name = 'short_text_content_block' %}
   {% with field_name = 'content' %}
@@ -28,17 +46,15 @@
   {% with model_name = 'short_text_content_block' %}
   {% with field_name = 'content' %}
   {% with model_identifier = 'site-byline-link-title' %}
+
   {% if stc_blocks[model_identifier].form is defined %}
+
+  <div><span class="btn btn-primary btn-large">
+
   {% with form = stc_blocks[model_identifier].form %}
 
-  {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<p><span class="btn btn-primary btn-large">', wrap_element_end=' &raquo;</span></p>') }}
+  {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<span>', wrap_element_end='</span>') }}
 
-  {% endwith %}
-  {% else %}
-  <p><a href="{{ stc_blocks['site-byline-link-url'].content }}" class="btn btn-primary btn-large">{{ stc_blocks[model_identifier].content }} &raquo;</a></p>
-  {% endif %}
-  {% endwith %}
-  {% endwith %}
   {% endwith %}
 
   {% with model_name = 'short_text_content_block' %}
@@ -47,9 +63,18 @@
   {% if stc_blocks[model_identifier].form is defined %}
   {% with form = stc_blocks[model_identifier].form %}
 
-  {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<p>', wrap_element_end='</p>') }}
+  ( {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<span>', wrap_element_end='</span>') }} )
 
   {% endwith %}
+  {% endif %}
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
+
+  &raquo;</span></div>
+
+  {% else %}
+  <p><a href="{{ stc_blocks['site-byline-link-url'].content }}" class="btn btn-primary btn-large">{{ stc_blocks[model_identifier].content }} &raquo;</a></p>
   {% endif %}
   {% endwith %}
   {% endwith %}

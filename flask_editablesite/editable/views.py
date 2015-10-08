@@ -8,10 +8,33 @@ from flask import (abort, Blueprint, flash, url_for, redirect, request,
 from flask_login import login_required, current_user
 
 from flask_editablesite.extensions import db
-from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm
+from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, ImageEditForm
 
 
 blueprint = Blueprint('editable', __name__, static_folder="../static")
+
+
+def get_model_class(model_classpath, model_name):
+    """Dynamically imports the model with the specified classpath."""
+
+    model_classpath_format = r'^[a-z0-9_]+(\.[A-Za-z0-9_]+)+$'
+
+    if not re.match(model_classpath_format, model_classpath):
+        raise ValueError('Class path "%s" for model name "%s" must be a valid Python module / class path (in the format "%s")' % (model_classpath, model_name, model_classpath_format))
+
+    model_classpath_split = model_classpath.rpartition('.')
+    model_modulepath, model_classname = (model_classpath_split[0], model_classpath_split[2])
+
+    try:
+        model_module = importlib.import_module(model_modulepath)
+    except ImportError:
+        raise ValueError('Error importing module "%s" for model name "%s"' % (model_modulepath, model_name))
+
+    model_class = getattr(model_module, model_classname, None)
+    if not model_class:
+        raise ValueError('Class "%s" not found in module "%s" for model name "%s"' % (model_classname, model_modulepath, model_name))
+
+    return model_class
 
 
 def text_update_func(model_name, field_name, model_identifier, is_autosave=False):
@@ -42,21 +65,7 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
     except KeyError:
         raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
 
-    model_classpath_format = r'^[a-z0-9_]+(\.[A-Za-z0-9_]+)+$'
-    if not re.match(model_classpath_format, model_classpath):
-        raise ValueError('Class path "%s" for model name "%s" must be a valid Python module / class path (in the format "%s")' % (model_classpath, model_name, model_classpath_format))
-
-    model_classpath_split = model_classpath.rpartition('.')
-    model_modulepath, model_classname = (model_classpath_split[0], model_classpath_split[2])
-
-    try:
-        model_module = importlib.import_module(model_modulepath)
-    except ImportError:
-        raise ValueError('Error importing module "%s" for model name "%s"' % (model_modulepath, model_name))
-
-    model_class = getattr(model_module, model_classname, None)
-    if not model_class:
-        raise ValueError('Class "%s" not found in module "%s" for model name "%s"' % (model_classname, model_modulepath, model_name))
+    model_class = get_model_class(model_classpath, model_name)
 
     filter_by_kwargs = {
         identifier_field_name: model_identifier,
@@ -139,3 +148,83 @@ def text_update_autosave(model_name, field_name, model_identifier):
         field_name=field_name,
         model_identifier=model_identifier,
         is_autosave=True)
+
+
+def image_update_func(model_name, field_name, model_identifier, is_dropzone=False):
+    try:
+        v = app.config['EDITABLE_MODELS'][model_name]
+    except KeyError:
+        abort(404)
+
+    if not(('image_fields' in v) and (field_name in v['image_fields'])):
+        abort(404)
+
+    try:
+        model_classpath = v['classpath']
+    except KeyError:
+        raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
+
+    try:
+        identifier_field_name = v['identifier_field']
+    except KeyError:
+        raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+
+    try:
+        title_field_name = v['title_field']
+    except KeyError:
+        raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+
+    model_class = get_model_class(model_classpath, model_name)
+
+    filter_by_kwargs = {
+        identifier_field_name: model_identifier,
+        'active': True}
+    model = None
+
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        model_dict = (session.get(model_name, {})
+            .get(model_identifier, None))
+
+        if model_dict:
+            model = model_class(**model_dict)
+    else:
+        model = (model_class.query
+            .filter_by(**filter_by_kwargs)
+            .first())
+
+    if not model:
+        try:
+            model = model_class.default_content()[model_identifier]
+        except KeyError:
+            abort(404)
+
+    if request.files:
+        request.form = request.form.copy()
+        request.form.update(request.files)
+
+    form = ImageEditForm()
+
+    if form.validate_on_submit():
+        image_orig = getattr(model, field_name)
+
+        filehandle = form.image.data
+        parts = os.path.splitext(filehandle.filename)
+
+
+@blueprint.route("/image-update/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@login_required
+def image_update(model_name, field_name, model_identifier):
+    return image_update_func(
+        model_name=model_name,
+        field_name=field_name,
+        model_identifier=model_identifier)
+
+
+@blueprint.route("/image-update-dropzone/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@login_required
+def image_update_dropzone(model_name, field_name, model_identifier):
+    return image_update_func(
+        model_name=model_name,
+        field_name=field_name,
+        model_identifier=model_identifier,
+        is_dropzone=True)

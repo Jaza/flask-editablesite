@@ -8,6 +8,10 @@
   margin-bottom: 40px;
 }
 
+.form-editable-inline {
+  display: inline;
+}
+
 .title-image-wrapper {
   margin-left: auto;
   margin-right: auto;
@@ -21,6 +25,17 @@
   color: #999;
 }
 
+.btn .edit-icon-wrapper {
+  top: 0;
+  left: -2em;
+}
+
+h1 .edit-icon-wrapper, .h1 .edit-icon-wrapper {
+  top: 1em;
+  left: -2em;
+  font-size: 18px;
+}
+
 .edit-icon-dante {
   left: -1.5em;
 }
@@ -31,7 +46,7 @@
 }
 
 .form-editable span input[type=text] {
-  width: 50%;
+  width: 40%;
 }
 
 .form-editable input[type=text], .dante-editable {

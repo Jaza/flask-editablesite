@@ -10,6 +10,7 @@ css = Bundle(
 
 css_admin = Bundle(
     "libs/Dante/css/dante-editor.css",
+    "libs/dropzone/dropzone.css",
     "css/editable.css",
     filters='cssmin',
     output='public/css/admin.css'
@@ -29,9 +30,11 @@ js_admin = Bundle(
     "libs/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js",
     "libs/Sanitize.js/js/sanitize.js",
     "libs/Dante/js/dante-editor.js",
+    "libs/dropzone/dropzone.js",
     "js/autosave.js",
     "js/editable.js",
     "js/dante.js",
+    "js/dropzone.js",
     filters='jsmin',
     output='public/js/admin.js'
 )

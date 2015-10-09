@@ -4,6 +4,8 @@ from urlparse import urlparse
 from flask import current_app as app
 from flask_script import Command, Option, prompt
 
+from flask_editablesite.editable.sample_images import scrape_sample_images
+
 
 class DownloadSampleImages(Command):
     """Downloads sample images by scraping a specified URL for links."""
@@ -29,26 +31,11 @@ class DownloadSampleImages(Command):
 
         from clint.textui import progress
 
-        r  = requests.get(url)
-        soup = BeautifulSoup(r.text, 'lxml')
-        hrefs = []
-
-        if parentelname:
-            soup_kwargs = {}
-
-            if parentelclass:
-                soup_kwargs['class_'] = parentelclass
-
-            for parent_el in soup.find_all(parentelname, **soup_kwargs):
-                if onlyfirstel:
-                    link = next(iter(parent_el.find_all('a'))).get('href')
-                    hrefs.append(link)
-                else:
-                    for link in parent_el.find_all('a'):
-                        hrefs.append(link.get('href'))
-        else:
-            for link in soup.find_all('a'):
-                hrefs.append(link.get('href'))
+        hrefs = scrape_sample_images(
+            url=url,
+            parentelname=parentelname,
+            parentelclass=parentelclass,
+            onlyfirstel=onlyfirstel)
 
         target_filepath = os.path.abspath(targetdir)
         if not os.path.exists(target_filepath):
@@ -57,16 +44,18 @@ class DownloadSampleImages(Command):
         total_downloaded = 0
 
         for href in progress.bar(hrefs):
-            r = requests.get(href, stream=True)
             filename = os.path.basename(urlparse(href).path)
             filepath = os.path.join(target_filepath, filename)
 
-            with open(filepath, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=1024):
-                    if chunk:
-                        f.write(chunk)
+            if not os.path.exists(filepath):
+                r = requests.get(href, stream=True)
 
-            total_downloaded += 1
+                with open(filepath, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=1024):
+                        if chunk:
+                            f.write(chunk)
+
+                total_downloaded += 1
 
         return 'Downloaded %d images' % total_downloaded
 

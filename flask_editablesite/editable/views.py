@@ -1,9 +1,6 @@
 from datetime import datetime
 from glob import glob
-import importlib
 import os
-import random
-import re
 from sqlalchemy.exc import IntegrityError
 
 from flask import current_app as app
@@ -15,32 +12,10 @@ from werkzeug import secure_filename
 
 from flask_editablesite.extensions import db
 from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, ImageEditForm
+from flask_editablesite.editable.utils import get_model_class, placeholder_or_random_sample_image
 
 
 blueprint = Blueprint('editable', __name__, static_folder="../static")
-
-
-def get_model_class(model_classpath, model_name):
-    """Dynamically imports the model with the specified classpath."""
-
-    model_classpath_format = r'^[a-z0-9_]+(\.[A-Za-z0-9_]+)+$'
-
-    if not re.match(model_classpath_format, model_classpath):
-        raise ValueError('Class path "%s" for model name "%s" must be a valid Python module / class path (in the format "%s")' % (model_classpath, model_name, model_classpath_format))
-
-    model_classpath_split = model_classpath.rpartition('.')
-    model_modulepath, model_classname = (model_classpath_split[0], model_classpath_split[2])
-
-    try:
-        model_module = importlib.import_module(model_modulepath)
-    except ImportError:
-        raise ValueError('Error importing module "%s" for model name "%s"' % (model_modulepath, model_name))
-
-    model_class = getattr(model_module, model_classname, None)
-    if not model_class:
-        raise ValueError('Class "%s" not found in module "%s" for model name "%s"' % (model_classname, model_modulepath, model_name))
-
-    return model_class
 
 
 def text_update_func(model_name, field_name, model_identifier, is_autosave=False):
@@ -156,25 +131,6 @@ def text_update_autosave(model_name, field_name, model_identifier):
         is_autosave=True)
 
 
-def placeholder_or_random_dummy_image():
-    return (app.config.get('EDITABLE_DUMMY_IMAGES_RELATIVE_PATH')
-        and random_dummy_image()
-        or app.config['EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'])
-
-
-
-def random_dummy_image():
-    listdir_filepath = os.path.join(
-        app.config['MEDIA_FOLDER'],
-        app.config['EDITABLE_DUMMY_IMAGES_RELATIVE_PATH'])
-
-    filename = random.choice(os.listdir(listdir_filepath))
-
-    return os.path.join(
-        app.config['EDITABLE_DUMMY_IMAGES_RELATIVE_PATH'],
-        filename)
-
-
 def image_update_func(model_name, field_name, model_identifier, is_dropzone=False):
     try:
         v = app.config['EDITABLE_MODELS'][model_name]
@@ -236,7 +192,7 @@ def image_update_func(model_name, field_name, model_identifier, is_dropzone=Fals
 
     if form.validate_on_submit():
         if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-            image = placeholder_or_random_dummy_image()
+            image = placeholder_or_random_sample_image()
         else:
             image_orig = getattr(model, field_name)
 

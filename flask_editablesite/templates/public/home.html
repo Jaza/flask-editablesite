@@ -2,6 +2,7 @@
 
 {% import 'macros/short_text.html' as short_text %}
 {% import 'macros/rich_text.html' as rich_text %}
+{% import 'macros/image.html' as image %}
 
 {% block content %}
 <!-- Main jumbotron for a primary marketing message or call to action -->
@@ -26,6 +27,23 @@
 
     {{ config.SITE_NAME }}
   </h1>
+
+  {% with model_name = 'image_content_block' %}
+  {% with field_name = 'image' %}
+  {% with model_identifier = 'site-logo' %}
+  {% set image_url = url_for('static', filename=ic_blocks[model_identifier].image|thumbnail('256x256', crop='fit')) %}
+  {% if ic_blocks[model_identifier].form is defined %}
+  {% with form = ic_blocks[model_identifier].form %}
+
+  {{ image.form(model_name, field_name, model_identifier, form, image_url, class='img-responsive img-circle img-lesswidth', alt=config.SITE_NAME) }}
+
+  {% endwith %}
+  {% else %}
+  <img class="img-responsive img-circle img-lesswidth" src="{{ image_url }}" alt="{{ config.SITE_NAME }}">
+  {% endif %}
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
 
   {% with model_name = 'short_text_content_block' %}
   {% with field_name = 'content' %}

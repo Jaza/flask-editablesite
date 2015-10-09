@@ -97,7 +97,17 @@ class Config(object):
             'title_field': 'title',
             'long_text_fields': ['content'],
         },
+        'image_content_block': {
+            'classpath': 'flask_editablesite.contentblock.models.ImageContentBlock',
+            'identifier_field': 'slug',
+            'title_field': 'title',
+            'image_fields': ['image'],
+            'image_relative_path': 'image-content-block/',
+        },
     }
+
+    EDITABLE_DUMMY_IMAGES_RELATIVE_PATH = os_env.get('FLASK_EDITABLESITE_EDITABLE_DUMMY_IMAGES_RELATIVE_PATH', None)
+    EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH = 'placeholder.png'
 
 
 class ProdConfig(Config):

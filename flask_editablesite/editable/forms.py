@@ -23,4 +23,8 @@ class LongTextOptionalEditForm(Form):
 
 
 class ImageEditForm(Form):
+    image = FileField('Image', validators=[DataRequired(), FileAllowed(('gif', 'jpg', 'jpeg', 'png'), 'Only image files (gif, jpg, png) can be uploaded for this field')])
+
+
+class ImageOptionalEditForm(Form):
     image = FileField('Image', validators=[FileAllowed(('gif', 'jpg', 'jpeg', 'png'), 'Only image files (gif, jpg, png) can be uploaded for this field')])

@@ -8,8 +8,8 @@ from flask_login import (login_user, login_required, logout_user,
 
 from flask_editablesite.extensions import login_manager
 from flask_editablesite.user.models import User
-from flask_editablesite.contentblock.models import ShortTextContentBlock, RichTextContentBlock
-from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm
+from flask_editablesite.contentblock.models import ShortTextContentBlock, RichTextContentBlock, ImageContentBlock
+from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, ImageEditForm
 from flask_editablesite.public.forms import LoginForm
 from flask_editablesite.utils import flash_errors
 from flask_editablesite.database import db
@@ -100,10 +100,41 @@ def home():
 
             rtc_blocks[k]['form'] = form
 
+    # Image blocks
+    ic_blocks = {
+            o.slug: {
+                'title': o.title,
+                'image': o.image,
+                'model': o}
+        for o in ImageContentBlock.default_content().values()}
+
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        for slug, o in session.get('image_content_block', {}).items():
+            ic_blocks[slug] = {
+                'title': o['title'],
+                'image': o['image']}
+    else:
+        for o in (ImageContentBlock.query
+                .filter_by(active=True)
+                .all()):
+            ic_blocks[o.slug] = {
+                'title': o.title,
+                'image': o.image}
+
+    if current_user.is_authenticated():
+        for k in ic_blocks.keys():
+            form = ImageEditForm(
+                image=ic_blocks[k]['image'])
+
+            form.image.label = ic_blocks[k]['title']
+
+            ic_blocks[k]['form'] = form
+
     template_vars = dict(
         login_form=login_form,
         stc_blocks=stc_blocks,
-        rtc_blocks=rtc_blocks)
+        rtc_blocks=rtc_blocks,
+        ic_blocks=ic_blocks)
 
     return render_template("public/home.html",
                            **template_vars)

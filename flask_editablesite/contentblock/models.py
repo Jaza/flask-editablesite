@@ -2,6 +2,8 @@
 from sqlalchemy import event
 from slugify import slugify
 
+from flask import current_app as app
+
 from flask_editablesite.database import (
     Column,
     db,
@@ -130,6 +132,16 @@ class ImageContentBlock(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
             return None
 
         return url_for('static', filename=self.image_path, _external=True)
+
+    @classmethod
+    def default_content(cls):
+        ret = {}
+
+        title = 'Site logo'
+        slug = slugify(title, to_lower=True)
+        ret[slug] = cls(title=title, slug=slug, image=app.config['EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'], active=True)
+
+        return ret
 
 
 event.listen(ImageContentBlock, 'before_insert', update_timestamps_before_insert)

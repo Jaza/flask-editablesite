@@ -48,14 +48,11 @@ def placeholder_or_random_sample_image():
 def random_sample_image():
     """Attempts to get a random sample image."""
 
-    try:
-        hrefs = scrape_sample_images(
-            url=app.config['EDITABLE_SAMPLE_IMAGES_SCRAPE_URL'],
-            parentelname=app.config.get('EDITABLE_SAMPLE_IMAGES_SCRAPE_PARENTELNAME'),
-            parentelclass=app.config.get('EDITABLE_SAMPLE_IMAGES_SCRAPE_PARENTELCLASS'),
-            onlyfirstel=app.config.get('EDITABLE_SAMPLE_IMAGES_SCRAPE_ONLYFIRSTEL'))
-    except Exception:
-        return None
+    hrefs = scrape_sample_images(
+        url=app.config['EDITABLE_SAMPLE_IMAGES_SCRAPE_URL'],
+        parentelname=app.config.get('EDITABLE_SAMPLE_IMAGES_SCRAPE_PARENTELNAME'),
+        parentelclass=app.config.get('EDITABLE_SAMPLE_IMAGES_SCRAPE_PARENTELCLASS'),
+        onlyfirstel=app.config.get('EDITABLE_SAMPLE_IMAGES_SCRAPE_ONLYFIRSTEL'))
 
     if not hrefs:
         return None
@@ -65,25 +62,19 @@ def random_sample_image():
     targetdir = os.path.abspath(os.path.join(app.config['MEDIA_FOLDER'], app.config['EDITABLE_SAMPLE_IMAGES_RELATIVE_PATH']))
     target_filepath = os.path.abspath(targetdir)
 
-    try:
-        if not os.path.exists(target_filepath):
-            os.makedirs(target_filepath)
-    except OSError:
-        return None
+    if not os.path.exists(target_filepath):
+        os.makedirs(target_filepath)
 
     filename = os.path.basename(urlparse(href).path)
     filepath = os.path.join(target_filepath, filename)
 
     if not os.path.exists(filepath):
-        try:
-            r = requests.get(href, stream=True)
+        r = requests.get(href, stream=True)
 
-            with open(filepath, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=1024):
-                    if chunk:
-                        f.write(chunk)
-        except Exception:
-            return None
+        with open(filepath, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
 
     return os.path.join(
         app.config['EDITABLE_SAMPLE_IMAGES_RELATIVE_PATH'],

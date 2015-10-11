@@ -12,7 +12,8 @@ from werkzeug import secure_filename
 
 from flask_editablesite.extensions import db
 from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, ImageEditForm
-from flask_editablesite.editable.utils import get_model_class, placeholder_or_random_sample_image
+from flask_editablesite.editable.utils import get_model_class
+from flask_editablesite.editable.sample_images import placeholder_or_random_sample_image
 
 
 blueprint = Blueprint('editable', __name__, static_folder="../static")

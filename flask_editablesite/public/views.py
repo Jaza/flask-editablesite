@@ -10,6 +10,7 @@ from flask_editablesite.extensions import login_manager
 from flask_editablesite.user.models import User
 from flask_editablesite.contentblock.models import ShortTextContentBlock, RichTextContentBlock, ImageContentBlock
 from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, ImageEditForm
+from flask_editablesite.editable.sample_images import placeholder_or_random_sample_image
 from flask_editablesite.public.forms import LoginForm
 from flask_editablesite.utils import flash_errors
 from flask_editablesite.database import db
@@ -109,6 +110,16 @@ def home():
         for o in ImageContentBlock.default_content().values()}
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        for slug, o in ic_blocks.items():
+            if session.get('image_content_block') == None:
+                session['image_content_block'] = {}
+
+            if not (session.get('image_content_block', {})
+                    .get(slug, None)):
+                session['image_content_block'][slug] = {
+                    'title': o['title'],
+                    'image': placeholder_or_random_sample_image()}
+
         for slug, o in session.get('image_content_block', {}).items():
             ic_blocks[slug] = {
                 'title': o['title'],

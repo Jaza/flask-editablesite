@@ -125,6 +125,19 @@ def home():
                 'title': o['title'],
                 'image': o['image']}
     else:
+        for slug, o in ic_blocks.items():
+            if not(ImageContentBlock.query
+                    .filter_by(slug=slug)
+                    .first()):
+                model = o['model']
+                model.image = placeholder_or_random_sample_image()
+
+                try:
+                    model.save()
+                except IntegrityError as e:
+                    db.session.rollback()
+                    raise e
+
         for o in (ImageContentBlock.query
                 .filter_by(active=True)
                 .all()):

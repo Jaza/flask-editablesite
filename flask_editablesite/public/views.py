@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Public section, including homepage and signup."""
+import os
+
 from flask import current_app as app
 from flask import (Blueprint, request, render_template, flash, url_for,
                     redirect, session, send_from_directory)
@@ -114,8 +116,22 @@ def home():
             if session.get('image_content_block') == None:
                 session['image_content_block'] = {}
 
+            if session.get('image_content_block', {}).get(slug, None):
+                filepath = os.path.join(
+                    app.config['MEDIA_FOLDER'],
+                    session['image_content_block'][slug]['image'])
+
+                # If the placeholder image defined in session storage
+                # doesn't exist on the filesystem (e.g. if Heroku has
+                # wiped the filesystem due to app restart), clear this
+                # model's session storage.
+                if not os.path.exists(filepath):
+                    del session['image_content_block'][slug]
+
             if not (session.get('image_content_block', {})
                     .get(slug, None)):
+                # If this model isn't currently saved to session storage,
+                # set its image now (could be a random sample) and save.
                 session['image_content_block'][slug] = {
                     'title': o['title'],
                     'image': placeholder_or_random_sample_image()}
@@ -129,6 +145,8 @@ def home():
             if not(ImageContentBlock.query
                     .filter_by(slug=slug)
                     .first()):
+                # If this model isn't currently saved to the DB,
+                # set its image now (could be a random sample) and save.
                 model = o['model']
                 model.image = placeholder_or_random_sample_image()
 

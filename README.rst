@@ -1,7 +1,26 @@
 Flask Editable Site
 ===================
 
-A template for building a small marketing web site in Flask where all content is live editable.
+A template for building a small marketing web site in `Flask
+<http://flask.pocoo.org/>`_ where all content is live editable.
+
+This app includes front- and back-end utilites for live / in-place editing of several different field types:
+
+- **Short text:** a regular text field with (AJAX-based) auto-save
+- **Rich text:** a ``textarea`` converted to WYSIWYG (powered by `Dante <http://michelson.github.io/Dante/>`_) with auto-save
+- **Image:** a file field converted to a drag-and-drop live image upload widget (powered by `Dropzone.js <http://www.dropzonejs.com/>`_)
+- **Date/time:** a regular text field converted to a date/time picker with auto-save
+
+It also includes utilities for adding to, re-ordering, and deleting from lists of content items.
+
+Here's a `demo of the app in action
+<https://flask-editablesite.herokuapp.com/>`_.
+
+This project is still **under active development**. I hope to have it mainly finished within the next week or so (as of 14 Oct 2015).
+
+The aim of this app is to demonstrate that, with the help of modern JS libraries, and with some well-thought-out server-side snippets, it's now perfectly possible to "bake in" live in-place editing for virtually every content element in a typical brochureware site.
+
+"Template" means that this is a sample app. It comes with a bunch of models that work out-of-the-box (e.g. text content block, image content block, gallery item, event). However, these are just a starting point: you can and should define your own models when building a real site. Same with the front-end templates: the home page layout and the CSS styles are just examples.
 
 
 Quickstart

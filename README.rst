@@ -11,7 +11,7 @@ This app includes front- and back-end utilites for live / in-place editing of se
 - **Image:** a file field converted to a drag-and-drop live image upload widget (powered by `Dropzone.js <http://www.dropzonejs.com/>`_)
 - **Date/time:** a regular text field converted to a date/time picker with auto-save
 
-It also includes utilities for adding to, re-ordering, and deleting from lists of content items.
+It also includes utilities for adding to, re-ordering, and deleting from lists of content items (all via in-place editing).
 
 Here's a `demo of the app in action
 <https://flask-editablesite.herokuapp.com/>`_.
@@ -19,6 +19,8 @@ Here's a `demo of the app in action
 This project is still **under active development**. I hope to have it mainly finished within the next week or so (as of 14 Oct 2015).
 
 The aim of this app is to demonstrate that, with the help of modern JS libraries, and with some well-thought-out server-side snippets, it's now perfectly possible to "bake in" live in-place editing for virtually every content element in a typical brochureware site.
+
+This app is not a CMS. On the contrary, think of it as a proof-of-concept alternative to a CMS. An alternative where there's no "admin area", there's no "editing mode", and there's no "preview button". There's only direct manipulation.
 
 "Template" means that this is a sample app. It comes with a bunch of models that work out-of-the-box (e.g. text content block, image content block, gallery item, event). However, these are just a starting point: you can and should define your own models when building a real site. Same with the front-end templates: the home page layout and the CSS styles are just examples.
 
@@ -69,11 +71,25 @@ if you want:
 Specifying DB config
 --------------------
 
-You can specify DB config when the app starts:
+You must specify the DB credentials before starting the app in normal mode:
 
 ::
 
-    export FLASK_EDITABLESITE_DATABASE_URI="postgresql://flask_editablesite:flask_editablesite@localhost:5432/flask_editablesite"; python manage.py server
+    export FLASK_EDITABLESITE_DATABASE_URI="postgresql://flask_editablesite:flask_editablesite@localhost:5432/flask_editablesite"
+
+
+Session store mode
+------------------
+
+The app can be configured to store all content as session data, instead of saving it to the database. To do this, set the following environment variable:
+
+::
+
+    export FLASK_EDITABLESITE_USE_SESSIONSTORE_NOT_DB=1
+
+When in session store mode, all content changes are lost whenever a new session is started (e.g. if the user clears his/her cookies, or switches to a different browser). A user's edits are only visible to him/her self, not to anyone else. Session store mode is therefore very useful for running the app in a demo or test environment. It should **not** be used in production, where you want content edits to actually be persisted and shown to other users!
+
+If session store mode is enabled, the app doesn't need a database at all (i.e. you don't even need to configure DB credentials).
 
 
 Deployment

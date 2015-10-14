@@ -91,6 +91,22 @@ When in session store mode, all content changes are lost whenever a new session 
 
 If session store mode is enabled, the app doesn't need a database at all (i.e. you don't even need to configure DB credentials).
 
+Also, if session store mode is enabled, then it's highly recommended that you store session data server-side. For this purpose, the app comes with `Flask-Session <http://pythonhosted.org/Flask-Session/>`_ installed. If you leave session storage as Flask's default (i.e. store client-side in a cookie), then you'll soon find your content disappearing (or errors being thrown), because no more than 4KB of data can be stored in one cookie.
+
+For example, to store session data on the filesystem:
+
+::
+
+    export FLASK_EDITABLESITE_SESSION_TYPE="filesystem"
+    export FLASK_EDITABLESITE_SESSION_FILE_DIR="static/cache/sessions"
+
+Or, to store it in Memcached:
+
+::
+
+    export FLASK_EDITABLESITE_SESSION_TYPE="memcached"
+    export FLASK_EDITABLESITE_SESSION_MEMCACHED="your.memcached.host:11211"
+
 
 Deployment
 ----------

@@ -2,6 +2,8 @@
 
 {% macro form(model_name, field_name, model_identifier, form, image_url, class='img-responsive', alt='', placeholder='Upload your image') %}
 
+{% set model_identifier = model_identifier|string %}
+
 {% with field_id = (model_name + '-' + field_name + '-' + model_identifier) %}
 
 <form id="image-form-{{ field_id }}" method="POST" class="form-editable dropzone-to-enable" action="{{ url_for('editable.image_update', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" enctype="multipart/form-data">

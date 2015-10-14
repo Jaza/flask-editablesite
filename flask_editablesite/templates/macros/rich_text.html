@@ -2,6 +2,8 @@
 
 {% macro form(model_name, field_name, model_identifier, form, placeholder='Type your content') %}
 
+{% set model_identifier = model_identifier|string %}
+
 {% with field_id = (model_name + '-' + field_name + '-' + model_identifier) %}
 
 <form id="rich-text-form-{{ field_id }}" method="POST" class="form-editable" action="{{ url_for('editable.text_update', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" data-autosave-url="{{ url_for('editable.text_update_autosave', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" data-autosave-field-id="{{ field_id }}">

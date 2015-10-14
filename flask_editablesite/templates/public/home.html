@@ -3,6 +3,7 @@
 {% import 'macros/short_text.html' as short_text %}
 {% import 'macros/rich_text.html' as rich_text %}
 {% import 'macros/image.html' as image %}
+{% import 'macros/hiddenfield.html' as hiddenfield %}
 
 {% block content %}
 <!-- Main jumbotron for a primary marketing message or call to action -->
@@ -100,120 +101,303 @@
 </div><!-- /.jumbotron -->
 
 <div class="body-content">
-  <div class="row">
-    <div class="col-sm-12">
 
-  {% with model_name = 'short_text_content_block' %}
-  {% with field_name = 'content' %}
-  {% with model_identifier = 'about-title' %}
-  {% if stc_blocks[model_identifier].form is defined %}
-  {% with form = stc_blocks[model_identifier].form %}
+<!-- Gallery -->
+<div class="row">
+  <div class="col-sm-12">
 
-  {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<h2>', wrap_element_end='</h2>') }}
+{% with model_name = 'short_text_content_block' %}
+{% with field_name = 'content' %}
+{% with model_identifier = 'gallery-title' %}
+{% if stc_blocks[model_identifier].form is defined %}
+{% with form = stc_blocks[model_identifier].form %}
 
-  {% endwith %}
-  {% else %}
-  <div class="short-text-content">
-  <h2>{{ stc_blocks[model_identifier].content }}</h2>
-  </div>
-  {% endif %}
-  {% endwith %}
-  {% endwith %}
-  {% endwith %}
+{{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<h2 class="text-center">', wrap_element_end='</h2>') }}
 
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-sm-6">
-
-  {% with model_name = 'rich_text_content_block' %}
-  {% with field_name = 'content' %}
-  {% with model_identifier = 'about-text-left-column' %}
-  {% if rtc_blocks[model_identifier].form is defined %}
-  {% with form = rtc_blocks[model_identifier].form %}
-
-  {{ rich_text.form(model_name, field_name, model_identifier, form, placeholder=rtc_blocks[model_identifier].title) }}
-
-  {% endwith %}
-  {% else %}
-  <div class="rich-text-content">
-  {{ rtc_blocks[model_identifier].content|safe }}
-  </div>
-  {% endif %}
-  {% endwith %}
-  {% endwith %}
-  {% endwith %}
-
-    </div>
-
-    <div class="col-sm-6">
-
-  {% with model_name = 'rich_text_content_block' %}
-  {% with field_name = 'content' %}
-  {% with model_identifier = 'about-text-right-column' %}
-  {% if rtc_blocks[model_identifier].form is defined %}
-  {% with form = rtc_blocks[model_identifier].form %}
-
-  {{ rich_text.form(model_name, field_name, model_identifier, form, placeholder=rtc_blocks[model_identifier].title) }}
-
-  {% endwith %}
-  {% else %}
-  <div class="rich-text-content">
-  {{ rtc_blocks[model_identifier].content|safe }}
-  </div>
-  {% endif %}
-  {% endwith %}
-  {% endwith %}
-  {% endwith %}
-
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-sm-12">
-
-  <div class="text-center">
-  {% with model_name = 'rich_text_content_block' %}
-  {% with field_name = 'content' %}
-  {% with model_identifier = 'about-text-below-columns' %}
-  {% if rtc_blocks[model_identifier].form is defined %}
-  {% with form = rtc_blocks[model_identifier].form %}
-
-  {{ rich_text.form(model_name, field_name, model_identifier, form, placeholder=rtc_blocks[model_identifier].title) }}
-
-  {% endwith %}
-  {% else %}
-  <div class="rich-text-content">
-  {{ rtc_blocks[model_identifier].content|safe }}
-  </div>
-  {% endif %}
-  {% endwith %}
-  {% endwith %}
-  {% endwith %}
-  </div>
-
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-lg-4">
-      <h2><i class="fa fa-code"></i> Bootstrap 3</h2>
-      <p>Sleek, intuitive, and powerful mobile-first front-end framework for faster and easier web development.</p>
-      <p><a class="btn btn-default" href="http://getbootstrap.com/">Official website &raquo;</a></p>
-    </div>
-    <div class="col-lg-4">
-      <h2><i class="fa fa-flask"></i> SQLAlchemy</h2>
-      <p>SQLAlchemy is the Python SQL toolkit and Object Relational Mapper that gives application developers the full power and flexibility of SQL.</p>
-      <p><a href="http://www.sqlalchemy.org/" class="btn btn-default" href="#">Official website &raquo;</a></p>
-   </div>
-    <div class="col-lg-4">
-      <h2><i class="fa fa-edit"></i> WTForms</h2>
-      <p>WTForms is a flexible forms validation and rendering library for python web development.</p>
-      <p><a href="http://wtforms.simplecodes.com/" class="btn btn-default" href="#">Official website &raquo;</a></p>
-    </div>
-  </div><!-- /.row -->
+{% endwith %}
+{% else %}
+<div class="short-text-content">
+<h2 class="text-center">{{ stc_blocks[model_identifier].content }}</h2>
 </div>
+{% endif %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+
+  </div>
+</div>
+
+<div class="row{% if gallery_forms %} weight-sortable{% endif %}">
+  {% for o in gallery_items %}
+  <div class="col-sm-4{% if gallery_forms %} weight-item{% endif %}"{% if gallery_forms %} id="for-gallery_items-{{ loop.index0 }}-weight"{% else %}{% if not is_gallery_showlimited and (loop.index == config.GALLERY_LIMIT+1) %} id="gallery-more"{% endif %}{% endif %}>
+    <a href="#galleryModal{{ o.id }}" class="rollover-link" data-toggle="modal">
+      <div class="caption">
+        <div class="caption-content">
+          <i class="fa fa-search-plus fa-3x"></i>
+        </div>
+      </div>
+      <img src="{{ url_for('static', filename=o.image|thumbnail('400x300', crop='fit')) }}" class="img-responsive" alt="{{ o.title }}">
+    </a>
+
+    {% if gallery_forms %}
+    <div class="weight-controls">
+      {% if not loop.first %}<a href="#" class="btn btn-primary weight-move-up" title="Move up"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a> {% endif %}{% if not loop.last %}<a href="#" class="btn btn-primary weight-move-down" title="Move down"><span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a> {% endif %}
+    </div>
+    {% endif %}
+
+    {% if gallery_forms and (gallery_forms[o.id].delete is defined) %}
+    {% with form = gallery_forms[o.id].delete %}
+    <form method="POST" action="{{ url_for('editable.delete', model_name='gallery_item', model_identifier=o.id) }}" id="gi-delete-{{ o.id }}" class="form-delete-item">
+      {{ form.hidden_tag() }}
+
+      <button type="submit" class="btn btn-danger delete-confirm-link" data-delete-confirm-item-type="delete this gallery item">
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+      </button>
+    </form>
+    {% endwith %}
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+{% if gi_reorder_form %}
+<form class="form" method="post" action="{{ url_for('editable.reorder', model_name='gallery_item') }}" role="form">
+
+  {{ gi_reorder_form.hidden_tag() }}
+
+  {% for f in gi_reorder_form.items %}
+    <div style="display:none;">{{ f.csrf_token() }}</div>
+
+    {{ hiddenfield.field(f.identifier) }}
+    {{ hiddenfield.field(f.weight) }}
+  {% endfor %}
+
+  <button type="submit" class="btn btn-primary hidden">Save new ordering</button>
+
+</form>
+{% endif %}
+
+{% if gi_add_form %}
+<div class="row">
+  <div class="col-lg-12 text-center">
+    <form method="POST" action="{{ url_for('editable.add', model_name='gallery_item') }}" id="gi-add" class="form-add-plus">
+      {{ gi_add_form.hidden_tag() }}
+
+      <button type="submit" class="add-plus">
+        <div class="add-plus-caption">&nbsp;<span>Add a gallery item</span>&nbsp;</div>
+        <div class="add-plus-wrapper"><span class="fa fa-plus"></span></div>
+      </button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% if is_gallery_showlimited %}
+<div class="row">
+  <div class="col-lg-12 text-center">
+    <div class="form-add-plus">
+      <a href="{{ url_for('public.home') }}?gallery_showmore=1#gallery-more" class="add-plus">
+        <div class="add-plus-caption">&nbsp;<span>Show more</span>&nbsp;</div>
+        <div class="add-plus-wrapper"><span class="fa fa-plus"></span></div>
+      </a>
+    </div>
+   </div>
+</div>
+{% endif %}
+
+<!-- About Section -->
+<div class="row">
+  <div class="col-sm-12">
+
+{% with model_name = 'short_text_content_block' %}
+{% with field_name = 'content' %}
+{% with model_identifier = 'about-title' %}
+{% if stc_blocks[model_identifier].form is defined %}
+{% with form = stc_blocks[model_identifier].form %}
+
+{{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<h2 class="text-center">', wrap_element_end='</h2>') }}
+
+{% endwith %}
+{% else %}
+<div class="short-text-content">
+<h2 class="text-center">{{ stc_blocks[model_identifier].content }}</h2>
+</div>
+{% endif %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-6">
+
+{% with model_name = 'rich_text_content_block' %}
+{% with field_name = 'content' %}
+{% with model_identifier = 'about-text-left-column' %}
+{% if rtc_blocks[model_identifier].form is defined %}
+{% with form = rtc_blocks[model_identifier].form %}
+
+{{ rich_text.form(model_name, field_name, model_identifier, form, placeholder=rtc_blocks[model_identifier].title) }}
+
+{% endwith %}
+{% else %}
+<div class="rich-text-content">
+{{ rtc_blocks[model_identifier].content|safe }}
+</div>
+{% endif %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+
+  </div>
+
+  <div class="col-sm-6">
+
+{% with model_name = 'rich_text_content_block' %}
+{% with field_name = 'content' %}
+{% with model_identifier = 'about-text-right-column' %}
+{% if rtc_blocks[model_identifier].form is defined %}
+{% with form = rtc_blocks[model_identifier].form %}
+
+{{ rich_text.form(model_name, field_name, model_identifier, form, placeholder=rtc_blocks[model_identifier].title) }}
+
+{% endwith %}
+{% else %}
+<div class="rich-text-content">
+{{ rtc_blocks[model_identifier].content|safe }}
+</div>
+{% endif %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+
+<div class="text-center">
+{% with model_name = 'rich_text_content_block' %}
+{% with field_name = 'content' %}
+{% with model_identifier = 'about-text-below-columns' %}
+{% if rtc_blocks[model_identifier].form is defined %}
+{% with form = rtc_blocks[model_identifier].form %}
+
+{{ rich_text.form(model_name, field_name, model_identifier, form, placeholder=rtc_blocks[model_identifier].title) }}
+
+{% endwith %}
+{% else %}
+<div class="rich-text-content">
+{{ rtc_blocks[model_identifier].content|safe }}
+</div>
+{% endif %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+</div>
+
+  </div>
+</div>
+
+</div><!-- /.body-content -->
+
+<!-- Gallery Modals -->
+{% for o in gallery_items %}
+<div class="modal editable-modal fade" id="galleryModal{{ o.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-content">
+    <div class="close-modal" data-dismiss="modal">
+      <div class="lr">
+        <div class="rl">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-lg-offset-2">
+          <div class="modal-body">
+            {% with model_name = 'gallery_item' %}
+            {% with field_name = 'title' %}
+            {% with model_identifier = o.id %}
+            {% if gallery_forms and (gallery_forms[model_identifier][field_name] is defined) %}
+            {% with form = gallery_forms[model_identifier][field_name] %}
+
+            {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder='Type your title', wrap_element_start='<h2 class="text-center">', wrap_element_end='</h2>') }}
+
+            {% endwith %}
+            {% else %}
+            <h2 class="text-center">{{ o.title }}</h2>
+            {% endif %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+            {% with model_name = 'gallery_item' %}
+            {% with field_name = 'image' %}
+            {% with model_identifier = o.id %}
+            {% set image_url = url_for('static', filename=o.image_or_placeholder|thumbnail('1200x900', crop='fit')) %}
+            {% if gallery_forms and (gallery_forms[model_identifier][field_name] is defined) %}
+            {% with form = gallery_forms[model_identifier][field_name] %}
+
+            {{ image.form(model_name, field_name, model_identifier, form, image_url, class='img-responsive img-centered', alt=o.title, placeholder='Upload your image') }}
+
+            {% endwith %}
+            {% else %}
+            <img class="img-responsive img-centered" src="{{ image_url }}" alt="{{ o.title }}">
+            {% endif %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+            <div style="position: relative">
+            {% with model_name = 'gallery_item' %}
+            {% with field_name = 'content' %}
+            {% with model_identifier = o.id %}
+            {% if gallery_forms and (gallery_forms[model_identifier][field_name] is defined) %}
+            {% with form = gallery_forms[model_identifier][field_name] %}
+
+            {{ rich_text.form(model_name, field_name, model_identifier, form, placeholder='Type your content') }}
+
+            {% endwith %}
+            {% else %}
+            {{ o.content|safe }}
+            {% endif %}
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+
+            </div>
+
+            <ul class="list-inline item-details">
+              <li>Date:
+                {% with model_name = 'gallery_item' %}
+                {% with field_name = 'date_taken' %}
+                {% with model_identifier = o.id %}
+                {% if gallery_forms and (gallery_forms[model_identifier][field_name] is defined) %}
+                {% with form = gallery_forms[model_identifier][field_name] %}
+
+                {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder='Type your date taken', wrap_element_start='<span>', wrap_element_end='</span>') }}
+
+                {% endwith %}
+                {% else %}
+                <strong>{{ o.date_taken }}</strong>
+                {% endif %}
+                {% endwith %}
+                {% endwith %}
+                {% endwith %}
+              </li>
+            </ul>
+
+            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
 {% endblock %}
 
 {% block css_before %}

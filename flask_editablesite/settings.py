@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import ast
 import os
+import pylibmc
 
 os_env = os.environ
 
@@ -13,6 +14,16 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os_env.get(
         'FLASK_EDITABLESITE_DATABASE_URI',
         'postgresql://localhost/example')  # TODO: Change me
+
+    SESSION_TYPE = os_env.get('FLASK_EDITABLESITE_SESSION_TYPE', None)
+    SESSION_USE_SIGNER = True
+    SESSION_KEY_PREFIX = 'flask-editablesite-session:'
+    SESSION_MEMCACHED = (os_env.get('FLASK_EDITABLESITE_SESSION_MEMCACHED', None)
+        and pylibmc.Client([os_env.get('FLASK_EDITABLESITE_SESSION_MEMCACHED', None)], binary=True)
+        or None)
+    SESSION_FILE_DIR = (os_env.get('FLASK_EDITABLESITE_SESSION_FILE_DIR', None)
+        and os.path.abspath(os.path.join(APP_DIR, os_env.get('FLASK_EDITABLESITE_SESSION_FILE_DIR', None)))
+        or None)
 
     USE_SESSIONSTORE_NOT_DB = (os_env.get('FLASK_EDITABLESITE_USE_SESSIONSTORE_NOT_DB')
         and ast.literal_eval(os_env.get('FLASK_EDITABLESITE_USE_SESSIONSTORE_NOT_DB'))
@@ -104,6 +115,20 @@ class Config(object):
             'image_fields': ['image'],
             'image_relative_path': 'image-content-block/',
         },
+        'gallery_item': {
+            'classpath': 'flask_editablesite.gallery.models.GalleryItem',
+            'identifier_field': 'id',
+            'title_field': 'title',
+            'text_fields': ['title', 'date_taken'],
+            'long_text_fields': ['content'],
+            'image_fields': ['image'],
+            'image_relative_path': 'gallery-item/',
+            'is_createable': True,
+            'is_deleteable': True,
+            'is_reorderable': True,
+            'weight_field': 'weight',
+            'reorder_form_prefix': 'gallery_',
+        },
     }
 
     EDITABLE_SAMPLE_IMAGES_SCRAPE_URL = os_env.get('FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_SCRAPE_URL', None)
@@ -115,6 +140,13 @@ class Config(object):
 
     EDITABLE_SAMPLE_IMAGES_RELATIVE_PATH = os_env.get('FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_RELATIVE_PATH', None)
     EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH = 'placeholder.png'
+
+    EDITABLE_SAMPLE_TEXT_SCRAPE_URLS = (os_env.get('FLASK_EDITABLESITE_EDITABLE_SAMPLE_TEXT_SCRAPE_URLS')
+        and ast.literal_eval(os_env.get('FLASK_EDITABLESITE_EDITABLE_SAMPLE_TEXT_SCRAPE_URLS'))
+        or [])
+    EDITABLE_PLACEHOLDER_TEXT = os_env.get('FLASK_EDITABLESITE_EDITABLE_PLACEHOLDER_TEXT', '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur enim magna, dignissim sit amet aliquet sed, varius sit amet tellus. Nam elementum, est non dignissim egestas, est turpis ornare nunc, ac ornare nisi purus id orci. Integer blandit sed leo eu tempus. Donec egestas nisl lectus, congue efficitur velit mollis mattis.</p>')
+
+    GALLERY_LIMIT = 6
 
 
 class ProdConfig(Config):

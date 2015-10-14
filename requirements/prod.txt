@@ -37,10 +37,14 @@ Flask-Login==0.2.11
 Flask-Bcrypt==0.6.2
 
 # Caching
+pylibmc
 Flask-Cache>=0.13.1
 
 # Debug toolbar
 Flask-DebugToolbar==0.9.2
+
+# Sessions
+Flask-Session==0.2.2
 
 # Slugs
 awesome-slugify==1.6.5
@@ -56,3 +60,7 @@ lxml
 beautifulsoup4==4.4.1
 requests
 clint==0.5.1
+
+# Dummy text
+Unidecode
+markovify==0.2.3

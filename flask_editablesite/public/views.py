@@ -5,14 +5,17 @@ import os
 from flask import current_app as app
 from flask import (Blueprint, request, render_template, flash, url_for,
                     redirect, session, send_from_directory)
+from flask_wtf import Form
 from flask_login import (login_user, login_required, logout_user,
                          current_user)
 
 from flask_editablesite.extensions import login_manager
 from flask_editablesite.user.models import User
 from flask_editablesite.contentblock.models import ShortTextContentBlock, RichTextContentBlock, ImageContentBlock
-from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, ImageEditForm
+from flask_editablesite.gallery.models import GalleryItem
+from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, ImageEditForm, ReorderForm
 from flask_editablesite.editable.sample_images import placeholder_or_random_sample_image
+from flask_editablesite.editable.sample_text import placeholder_or_random_sample_text
 from flask_editablesite.public.forms import LoginForm
 from flask_editablesite.utils import flash_errors
 from flask_editablesite.database import db
@@ -107,7 +110,7 @@ def home():
     ic_blocks = {
             o.slug: {
                 'title': o.title,
-                'image': o.image,
+                'image': o.image_or_placeholder,
                 'model': o}
         for o in ImageContentBlock.default_content().values()}
 
@@ -172,11 +175,133 @@ def home():
 
             ic_blocks[k]['form'] = form
 
+    # Gallery items
+    gallery_limit = app.config['GALLERY_LIMIT']
+
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        gallery_count = len(session.get('gallery_item', []))
+    else:
+        gallery_count = (GalleryItem.query
+            .filter_by(active=True)
+            .count())
+
+    if not gallery_count:
+        default_gallery_items = GalleryItem.default_content()
+
+        if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+            session['gallery_item'] = ['']
+
+            for o in default_gallery_items:
+                # If this model isn't currently saved to session storage,
+                # set its image and text content now (could be random
+                # samples) and save.
+                session['gallery_item'].append({
+                    'title': o.title,
+                    'image': placeholder_or_random_sample_image(),
+                    'content': placeholder_or_random_sample_text(),
+                    'date_taken': o.date_taken})
+        else:
+            curr_weight = 0
+
+            for o in default_gallery_items:
+                # If this model isn't currently saved to the DB,
+                # set its image and text content now (could be random
+                # samples) and save.
+                o.image = placeholder_or_random_sample_image()
+                o.content = placeholder_or_random_sample_text()
+                o.weight = curr_weight
+
+                try:
+                    o.save()
+                    curr_weight += 1
+                except IntegrityError as e:
+                    db.session.rollback()
+                    raise e
+
+        gallery_count = len(default_gallery_items)
+
+    is_gallery_showmore = request.args.get('gallery_showmore', None) == '1'
+
+    is_gallery_showlimited = (
+        (not current_user.is_authenticated()) and
+        (not is_gallery_showmore) and
+        (gallery_count > gallery_limit))
+
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        if session.get('gallery_item') == None:
+            session['gallery_item'] = ['']
+
+        for id, o in enumerate(session.get('gallery_item', [])):
+            if o:
+                filepath = os.path.join(
+                    app.config['MEDIA_FOLDER'],
+                    session['gallery_item'][id]['image'])
+
+                # If the placeholder image defined in session storage
+                # doesn't exist on the filesystem (e.g. if Heroku has
+                # wiped the filesystem due to app restart), set a new image
+                # for this model.
+                if not os.path.exists(filepath):
+                    session['gallery_item'][id]['image'] = placeholder_or_random_sample_image()
+
+        gallery_items = []
+        for id, o in enumerate(session['gallery_item']):
+            if o:
+                model = GalleryItem(**o)
+                model.id = id
+                model.weight = id-1
+                gallery_items.append(model)
+    else:
+        gallery_items = (GalleryItem.query
+            .filter_by(active=True)
+            .order_by(GalleryItem.weight))
+
+    if is_gallery_showlimited:
+        if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+            gallery_items = gallery_items[:gallery_limit]
+        else:
+            gallery_items = (gallery_items
+                .limit(gallery_limit))
+
+    if not app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        gallery_items = gallery_items.all()
+
+    gallery_forms = {}
+    if current_user.is_authenticated():
+        for gi in gallery_items:
+            gallery_forms[gi.id] = {
+                'title': TextEditForm(content=gi.title),
+                'image': ImageEditForm(image=gi.image),
+                'content': LongTextEditForm(content=gi.content),
+                'date_taken': TextEditForm(content=gi.date_taken)}
+
+            if current_user.is_authenticated():
+                gallery_forms[gi.id]['delete'] = Form()
+
+    gi_add_form = current_user.is_authenticated() and Form() or None
+
+    gi_reorder_form = None
+
+    if current_user.is_authenticated():
+        if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+            items = [{'identifier': i, 'weight': i-1} for i, v in enumerate(session['gallery_item']) if v]
+        else:
+            items = [{'identifier': gi.id, 'weight': gi.weight} for gi in (GalleryItem.query
+                .filter_by(active=True)
+                .order_by(GalleryItem.weight).all())]
+
+        gi_reorder_form = ReorderForm(items=items, prefix='gallery_')
+
     template_vars = dict(
         login_form=login_form,
         stc_blocks=stc_blocks,
         rtc_blocks=rtc_blocks,
-        ic_blocks=ic_blocks)
+        ic_blocks=ic_blocks,
+        gallery_items=gallery_items,
+        is_gallery_showlimited=is_gallery_showlimited,
+        gallery_forms=gallery_forms,
+        gi_add_form=gi_add_form,
+        gi_reorder_form=gi_reorder_form)
 
     return render_template("public/home.html",
                            **template_vars)

@@ -12,6 +12,7 @@ from flask_editablesite.extensions import (
     db,
     login_manager,
     mail,
+    sess,
     migrate,
     debug_toolbar,
     thumb,
@@ -44,6 +45,10 @@ def register_extensions(app):
     debug_toolbar.init_app(app)
     migrate.init_app(app, db)
     thumb.init_app(app)
+
+    if app.config.get('SESSION_TYPE'):
+        sess.init_app(app)
+
     return None
 
 

@@ -2,6 +2,8 @@
 
 {% macro form(model_name, field_name, model_identifier, form, class='h2', placeholder='Type your title', wrap_element_start='', wrap_element_end='') %}
 
+{% set model_identifier = model_identifier|string %}
+
 {% with field_id = (model_name + '-' + field_name + '-' + model_identifier) %}
 
 <form id="short-text-form-{{ field_id }}" method="POST" class="form-editable{% if wrap_element_start == '<span>' %} form-editable-inline{% endif %}" action="{{ url_for('editable.text_update', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" data-autosave-url="{{ url_for('editable.text_update_autosave', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" data-autosave-field-id="{{ field_id }}">

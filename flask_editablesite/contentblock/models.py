@@ -55,6 +55,10 @@ class ShortTextContentBlock(SurrogatePK, Slugged, TimeStamped, Confirmable, Mode
         slug = slugify(title, to_lower=True)
         ret[slug] = cls(title=title, slug=slug, content='About', active=True)
 
+        title = 'Gallery title'
+        slug = slugify(title, to_lower=True)
+        ret[slug] = cls(title=title, slug=slug, content='Gallery', active=True)
+
         return ret
 
 
@@ -123,7 +127,6 @@ class ImageContentBlock(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
 
     @property
     def image_path(self):
-        from flask import current_app as app
         return self.image and '%s%s' % (app.config['UPLOADS_RELATIVE_PATH'], self.image) or None
 
     @property
@@ -132,6 +135,10 @@ class ImageContentBlock(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
             return None
 
         return url_for('static', filename=self.image_path, _external=True)
+
+    @property
+    def image_or_placeholder(self):
+        return self.image or app.config['EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH']
 
     @classmethod
     def default_content(cls):

@@ -21,6 +21,9 @@ cache = Cache()
 from flask_mail import Mail
 mail = Mail()
 
+from flask_session import Session
+sess = Session()
+
 from flask_debugtoolbar import DebugToolbarExtension
 debug_toolbar = DebugToolbarExtension()
 

@@ -61,6 +61,10 @@ h1 .edit-icon-wrapper, .h1 .edit-icon-wrapper {
   width: auto;
 }
 
+.postArticle section {
+  overflow: hidden;
+}
+
 
 /* Dropzone */
 
@@ -85,6 +89,10 @@ h1 .edit-icon-wrapper, .h1 .edit-icon-wrapper {
 
 .jumbotron .dropzone .dz-message {
   bottom: 100px;
+}
+
+.modal .modal-content .dropzone .dz-message {
+  bottom: 40%;
 }
 
 .dropzone:hover .dz-message {
@@ -118,4 +126,40 @@ h1 .edit-icon-wrapper, .h1 .edit-icon-wrapper {
   display: inline-block;
   width: 256px;
   height: 256px;
+}
+
+.modal .modal-content .dropzone .dz-preview .dz-image {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  margin: 0 auto;
+  border-radius: 0;
+}
+
+
+
+/* WEIGHT / DELETE CONTROLS */
+
+.form-delete-item {
+  display: inline-block;
+  position: absolute;
+  bottom: 50px;
+  right: 35px;
+}
+
+.form-delete-item .btn, .weight-controls .btn {
+  font-size: 1.8em;
+  border-radius: 50%;
+  text-align: center;
+}
+
+.weight-controls {
+  display: inline-block;
+  position: absolute;
+  bottom: 50px;
+  left: 35px;
+}
+
+.weight-controls .btn {
+  margin-right: 15px;
 }

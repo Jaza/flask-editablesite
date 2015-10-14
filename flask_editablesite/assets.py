@@ -32,9 +32,11 @@ js_admin = Bundle(
     "libs/Dante/js/dante-editor.js",
     "libs/dropzone/dropzone.js",
     "js/autosave.js",
+    "js/deleteconfirm.js",
     "js/editable.js",
     "js/dante.js",
     "js/dropzone.js",
+    "js/weight.js",
     filters='jsmin',
     output='public/js/admin.js'
 )

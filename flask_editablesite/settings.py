@@ -146,7 +146,12 @@ class Config(object):
         or [])
     EDITABLE_PLACEHOLDER_TEXT = os_env.get('FLASK_EDITABLESITE_EDITABLE_PLACEHOLDER_TEXT', '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur enim magna, dignissim sit amet aliquet sed, varius sit amet tellus. Nam elementum, est non dignissim egestas, est turpis ornare nunc, ac ornare nisi purus id orci. Integer blandit sed leo eu tempus. Donec egestas nisl lectus, congue efficitur velit mollis mattis.</p>')
 
-    GALLERY_LIMIT = 6
+    GALLERY_NUM_DEFAULT_ITEMS = (os_env.get('FLASK_EDITABLESITE_GALLERY_NUM_DEFAULT_ITEMS')
+        and ast.literal_eval(os_env.get('FLASK_EDITABLESITE_GALLERY_NUM_DEFAULT_ITEMS'))
+        or 6)
+    GALLERY_LIMIT = (os_env.get('FLASK_EDITABLESITE_GALLERY_LIMIT')
+        and ast.literal_eval(os_env.get('FLASK_EDITABLESITE_GALLERY_LIMIT'))
+        or 3)
 
 
 class ProdConfig(Config):

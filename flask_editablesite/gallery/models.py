@@ -77,7 +77,7 @@ class GalleryItem(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
     def default_content(cls):
         ret = []
 
-        for i in range(12):
+        for i in range(app.config['GALLERY_NUM_DEFAULT_ITEMS']):
             item = cls.new_item(title_prefix='Sample ')
             item.weight = i
 

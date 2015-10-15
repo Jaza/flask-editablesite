@@ -29,6 +29,8 @@
 
   {% block css_before %}{% endblock %}
 
+  <link rel="stylesheet" href="{% if config.ENV == 'prod' %}//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css{% else %}{{ url_for('static', filename='libs/bootstrap/dist/css/bootstrap.css') }}{% endif %}">
+
   {% assets "css_all" %}
     <link rel="stylesheet" href="{{ ASSET_URL }}">
   {% endassets %}

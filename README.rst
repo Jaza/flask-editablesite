@@ -34,27 +34,21 @@ First, set your app's secret key as an environment variable. For example, add th
 
     export FLASK_EDITABLESITE_SECRET='something-really-secret'
 
-
 Then run the following commands to bootstrap your environment.
-
 
 ::
 
     git clone https://github.com/Jaza/flask-editablesite
     cd flask-editablesite
     pip install -r requirements/dev.txt
-    python manage.py server
 
-You will see a pretty welcome screen.
-
-Once you have installed your DBMS, run the following to create your app's database tables and perform the initial migration:
+Before running the app, you'll need to either specify DB config, or enable session store mode. See instructions further down for details on either of these. Then you can run the app with this command:
 
 ::
 
-    python manage.py db init
-    python manage.py db migrate
-    python manage.py db upgrade
     python manage.py server
+
+You will see a pretty welcome screen.
 
 
 Dynamic Secret Key
@@ -76,6 +70,24 @@ You must specify the DB credentials before starting the app in normal mode:
 ::
 
     export FLASK_EDITABLESITE_DATABASE_URI="postgresql://flask_editablesite:flask_editablesite@localhost:5432/flask_editablesite"
+
+If using your own DB models, run the following to get started with migrations:
+
+::
+
+    python manage.py db init
+
+Each time you need to create a new migration script, run the following:
+
+::
+
+    python manage.py db migrate
+
+If using the included sample models and migrations, or if you've already initialised and created migrations for your own models, then run the following to create the DB schema:
+
+::
+
+    python manage.py db upgrade
 
 
 Session store mode

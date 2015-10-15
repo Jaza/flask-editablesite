@@ -129,6 +129,10 @@ textarea {
 
 /* ADD / PLUS BUTTONS */
 
+.form-add-plus {
+  margin-bottom: 30px;
+}
+
 .add-plus-wrapper {
   border: 5px solid #999;
   padding: 20px;

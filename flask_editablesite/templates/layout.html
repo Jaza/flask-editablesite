@@ -20,7 +20,7 @@
   <!-- http://www.freefavicon.com/freefavicons/objects/iconinfo/pencil-152-168414.html -->
   <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='libs/font-awesome4/css/font-awesome.min.css') }}">
+  <link rel="stylesheet" href="{% if config.ENV == 'prod' %}//maxcdn.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css{% else %}{{ url_for('static', filename='libs/font-awesome4/css/font-awesome.min.css') }}{% endif %}">
 
   <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>

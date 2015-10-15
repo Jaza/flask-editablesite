@@ -417,7 +417,9 @@ use the credentials that have been provided to you by the site administrators.
 
             {% endwith %}
             {% else %}
+            <div class="rich-text-content">
             {{ o.content|safe }}
+            </div>
             {% endif %}
             {% endwith %}
             {% endwith %}

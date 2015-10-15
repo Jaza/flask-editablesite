@@ -100,6 +100,50 @@ Or, to store it in Memcached ::
     export FLASK_EDITABLESITE_SESSION_MEMCACHED="your.memcached.host:11211"
 
 
+Sample content
+--------------
+
+The app comes with some utilities for populating a site with random text and images (from configured sources). This works either in regular (database) mode, or in session store mode. It's handy for demo, prototyping, and "placeholder content" purposes.
+
+For the "sample images" functionality, you can configure the app to scrape links to images from a URL of your choice. E.g. say the web site ``coolexamplephotos.com`` has source code that looks something like this ::
+
+    <html>
+    <head>
+      <title>Cool Example Photos</title>
+    </head>
+    <body>
+      <h1>Cool Example Photos</h1>
+
+      <ul>
+        <li><a href="http://coolexamplephotos.com/photos/foo.jpg">foo.jpg</a></li>
+        <li><a href="http://coolexamplephotos.com/photos/bar.jpg">bar.jpg</a></li>
+        <li><a href="http://coolexamplephotos.com/photos/baz.jpg">baz.jpg</a></li>
+      </ul>
+    </body>
+    </html>
+
+Set the following environment variables, and the app will randomly source images from that site and display them in image fields ::
+
+    export FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_SCRAPE_URL="http://coolexamplephotos.com/"
+    export FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_SCRAPE_PARENTELNAME="li"
+    export FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_RELATIVE_PATH="coolexamplephotos/"
+
+Where ``FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_SCRAPE_URL`` is the URL of the page to scrape, ``FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_SCRAPE_PARENTELNAME`` is the parent element of the image links, and ``FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_RELATIVE_PATH`` is the relative directory in which to store the downloaded images on the filesystem.
+
+For the "sample text" functionality, you can configure one or more URLs of texts to use as source material. The texts can be anything (e.g. "lorem ipsum" blurb, blog posts, encyclopaedia entries), and can be in any text format (e.g. HTML, RSS, CSV); but books in plain text are recommended.
+
+Set the following environment variable to randomly source text from one of the URLs ::
+
+    export FLASK_EDITABLESITE_EDITABLE_SAMPLE_TEXT_SCRAPE_URLS="['http://cooltextsources.com/texts/foo.txt', 'http://cooltextsources.com/texts/bar.txt', 'http://cooltextsources.com/texts/baz.txt']"
+
+The actual sentences that then get displayed in text fields, are generated based on the chosen source text, using the `Markovify <https://github.com/jsvine/markovify>`_ library.
+
+If using sample images and/or text with these utilities, it's recommended to set the "credits" environment variables, which will show your specified acknowledgements on the home page ::
+
+    export FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_CREDITS='<p>The placeholder images are a selection from the public domain <a href="http://coolexamplephotos.com/">Cool Example Photos</a> photo collection (a different random set for each session). Many thanks to John Smith of Foobar Design.</p>'
+    export FLASK_EDITABLESITE_EDITABLE_SAMPLE_TEXT_CREDITS='<p>The placeholder text is sourced from a subset of the public domain <a href="http://cooltextsources.org/">Cool Text Sources</a> texts collection (a different random text for each session). Many thanks to the original text authors. The actual sentences in the text are generated using the <a href="https://github.com/jsvine/markovify">Markovify</a> library.</p>'
+
+
 Deployment
 ----------
 

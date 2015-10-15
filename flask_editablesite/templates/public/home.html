@@ -302,6 +302,37 @@
   </div>
 </div>
 
+{% if not current_user.is_authenticated() %}
+<div class="row">
+  <div class="col-sm-12 login-instructions">
+
+<h2 class="text-center">Start editing</h2>
+
+<div class="rich-text-content">
+<p>
+  Click the "Login" link at the bottom of the page (right-hand side), and
+
+{% if config.USE_SESSIONSTORE_NOT_DB %}
+
+use the following credentials:
+</p>
+<p>
+  <strong>Email:</strong> {{ config.SESSIONSTORE_USER_EMAIL }}
+  <br>
+  <strong>Password:</strong> {{ config.SESSIONSTORE_USER_PASSWORD }}
+
+{% else %}{# config.USE_SESSIONSTORE_NOT_DB #}
+
+use the credentials that have been provided to you by the site administrators.
+
+{% endif %}{# config.USE_SESSIONSTORE_NOT_DB #}
+</p>
+</div>
+
+  </div>
+</div>
+{% endif %}{# not current_user.is_authenticated() #}
+
 </div><!-- /.body-content -->
 
 <!-- Gallery Modals -->

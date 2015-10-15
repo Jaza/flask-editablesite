@@ -254,6 +254,15 @@ a.add-plus, a.add-plus:hover, a.add-plus:focus {
 
 
 
+/* LOGIN INSTRUCTIONS */
+
+.login-instructions {
+  background-color: #ddd;
+  padding-bottom: 30px;
+}
+
+
+
 /* FOOTER */
 
 footer {

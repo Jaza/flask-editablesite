@@ -90,15 +90,15 @@ class RichTextContentBlock(SurrogatePK, Slugged, TimeStamped, Confirmable, Model
 
         title = 'About text (left column)'
         slug = slugify(title, to_lower=True)
-        ret[slug] = cls(title=title, slug=slug, content='<p>Grkjg rhekjgreh gkje hgkrejgh erkjgerh gjkerhg kejrg herkjgehr kgjerhg kjreg herkjgehr kgjerh gkjerhg kejrgh erkjgehr kjgerh gkjerhg erkjg herkjg ehr jgkerh jgkreg.</p>', active=True)
+        ret[slug] = cls(title=title, slug=slug, content='<p>The aim of this app is to demonstrate that, with the help of modern JS libraries, and with some well-thought-out server-side snippets, it\'s now perfectly possible to "bake in" live in-place editing for virtually every content element in a typical brochureware site.</p>', active=True)
 
         title = 'About text (right column)'
         slug = slugify(title, to_lower=True)
-        ret[slug] = cls(title=title, slug=slug, content='<p>Jkjg rekgre gkjg hkjrgher kjgrhe gkjerhg ekrjgh erkjgeh gkjergh erkjghe rkjgerh gkejrg herkjghre kjgerh gkjerhg erkjg herkgj.</p>', active=True)
+        ret[slug] = cls(title=title, slug=slug, content='<p>This app is not a CMS. On the contrary, think of it as a proof-of-concept alternative to a CMS. An alternative where there\'s no "admin area", there\'s no "editing mode", and there\'s no "preview button".</p>', active=True)
 
         title = 'About text (below columns)'
         slug = slugify(title, to_lower=True)
-        ret[slug] = cls(title=title, slug=slug, content='<p>Vkgjre kgjreh gkjregh erkjgehr kgjeh gerkjg.</p>', active=True)
+        ret[slug] = cls(title=title, slug=slug, content="<p>There's only direct manipulation.</p>", active=True)
 
         return ret
 

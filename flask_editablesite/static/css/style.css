@@ -256,7 +256,7 @@ a.add-plus, a.add-plus:hover, a.add-plus:focus {
 
 /* LOGIN INSTRUCTIONS */
 
-.login-instructions {
+.greybox {
   background-color: #ddd;
   padding-bottom: 30px;
 }

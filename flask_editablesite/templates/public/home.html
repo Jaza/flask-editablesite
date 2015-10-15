@@ -303,8 +303,8 @@
 </div>
 
 {% if not current_user.is_authenticated() %}
-<div class="row">
-  <div class="col-sm-12 login-instructions">
+<div class="row greybox">
+  <div class="col-sm-{% if config.EDITABLE_SAMPLE_IMAGES_CREDITS and config.EDITABLE_SAMPLE_TEXT_CREDITS %}4{% elif config.EDITABLE_SAMPLE_IMAGES_CREDITS or config.EDITABLE_SAMPLE_TEXT_CREDITS %}6{% else %}12{% endif %}">
 
 <h2 class="text-center">Start editing</h2>
 
@@ -330,6 +330,30 @@ use the credentials that have been provided to you by the site administrators.
 </div>
 
   </div>
+
+  {% if config.EDITABLE_SAMPLE_TEXT_CREDITS %}
+  <div class="col-sm-{% if config.EDITABLE_SAMPLE_IMAGES_CREDITS %}4{% else %}6{% endif %}">
+
+<h2 class="text-center">Text credits</h2>
+
+<div class="rich-text-content">
+{{ config.EDITABLE_SAMPLE_TEXT_CREDITS|safe }}
+</div>
+
+  </div>
+  {% endif %}
+
+  {% if config.EDITABLE_SAMPLE_IMAGES_CREDITS %}
+  <div class="col-sm-{% if config.EDITABLE_SAMPLE_TEXT_CREDITS %}4{% else %}6{% endif %}">
+
+<h2 class="text-center">Image credits</h2>
+
+<div class="rich-text-content">
+{{ config.EDITABLE_SAMPLE_IMAGES_CREDITS|safe }}
+</div>
+
+  </div>
+  {% endif %}
 </div>
 {% endif %}{# not current_user.is_authenticated() #}
 

@@ -28,23 +28,17 @@ This app is not a CMS. On the contrary, think of it as a proof-of-concept altern
 Quickstart
 ----------
 
-First, set your app's secret key as an environment variable. For example, add the following to ``.bashrc`` or ``.bash_profile``.
-
-.. code-block:: bash
+First, set your app's secret key as an environment variable. For example, add the following to ``.bashrc`` or ``.bash_profile`` ::
 
     export FLASK_EDITABLESITE_SECRET='something-really-secret'
 
-Then run the following commands to bootstrap your environment.
-
-::
+Then run the following commands to bootstrap your environment ::
 
     git clone https://github.com/Jaza/flask-editablesite
     cd flask-editablesite
     pip install -r requirements/dev.txt
 
-Before running the app, you'll need to either specify DB config, or enable session store mode. See instructions further down for details on either of these. Then you can run the app with this command:
-
-::
+Before running the app, you'll need to either specify DB config, or enable session store mode. See instructions further down for details on either of these. Then you can run the app with this command ::
 
     python manage.py server
 
@@ -55,47 +49,37 @@ Dynamic Secret Key
 ------------------
 
 You can have a different random secret key each time the app starts,
-if you want:
-
-::
+if you want ::
 
     export FLASK_EDITABLESITE_SECRET=`python -c "import os; from binascii import hexlify; print(hexlify(os.urandom(24)))"`; python manage.py server
 
 
-Specifying DB config
---------------------
+DB config and migrations
+------------------------
 
-You must specify the DB credentials before starting the app in normal mode:
-
-::
+You must specify the DB credentials before starting the app in normal mode ::
 
     export FLASK_EDITABLESITE_DATABASE_URI="postgresql://flask_editablesite:flask_editablesite@localhost:5432/flask_editablesite"
 
-If using your own DB models, run the following to get started with migrations:
-
-::
+If using your own DB models, run the following to get started with migrations ::
 
     python manage.py db init
 
-Each time you need to create a new migration script, run the following:
-
-::
+Each time you need to create a new migration script, run the following ::
 
     python manage.py db migrate
 
-If using the included sample models and migrations, or if you've already initialised and created migrations for your own models, then run the following to create the DB schema:
-
-::
+If using the included sample models and migrations, or if you've already initialised and created migrations for your own models, then run the following to create the DB schema ::
 
     python manage.py db upgrade
+
+For a full migration command reference, run ``python manage.py db --help``.
 
 
 Session store mode
 ------------------
 
-The app can be configured to store all content as session data, instead of saving it to the database. To do this, set the following environment variable:
-
-::
+The app can be configured to store all content as session data, instead of saving it to the database. To do this, set the following environment variable ::
 
     export FLASK_EDITABLESITE_USE_SESSIONSTORE_NOT_DB=1
 
@@ -103,18 +87,14 @@ When in session store mode, all content changes are lost whenever a new session 
 
 If session store mode is enabled, the app doesn't need a database at all (i.e. you don't even need to configure DB credentials).
 
-Also, if session store mode is enabled, then it's highly recommended that you store session data server-side. For this purpose, the app comes with `Flask-Session <http://pythonhosted.org/Flask-Session/>`_ installed. If you leave session storage as Flask's default (i.e. store client-side in a cookie), then you'll soon find your content disappearing (or errors being thrown), because no more than 4KB of data can be stored in one cookie.
+Also, if session store mode is enabled, then it's highly recommended that you store session data server-side. For this purpose, the app comes with `Flask-Session <http://pythonhosted.org/Flask-Session/>`_ installed. If you leave session storage as Flask's default (i.e. store client-side in a cookie), then you'll soon find your content disappearing (or errors being thrown), because `no more than 4KB of data can be stored in one cookie <http://greenash.net.au/thoughts/2015/10/cookies-cant-be-more-than-4kib-in-size/>`_.
 
-For example, to store session data on the filesystem:
-
-::
+For example, to store session data on the filesystem ::
 
     export FLASK_EDITABLESITE_SESSION_TYPE="filesystem"
     export FLASK_EDITABLESITE_SESSION_FILE_DIR="static/cache/sessions"
 
-Or, to store it in Memcached:
-
-::
+Or, to store it in Memcached ::
 
     export FLASK_EDITABLESITE_SESSION_TYPE="memcached"
     export FLASK_EDITABLESITE_SESSION_MEMCACHED="your.memcached.host:11211"
@@ -142,21 +122,3 @@ Running Tests
 To run all tests, run ::
 
     python manage.py test
-
-
-Migrations
-----------
-
-Whenever a database migration needs to be made. Run the following commands:
-::
-
-    python manage.py db migrate
-
-This will generate a new migration script. Then run:
-::
-
-    python manage.py db upgrade
-
-To apply the migration.
-
-For a full migration command reference, run ``python manage.py db --help``.

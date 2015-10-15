@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import url(http://fonts.googleapis.com/css?family=Merriweather:400,700,400italic,700italic|Open+Sans:400,300,800);
+@import url(//fonts.googleapis.com/css?family=Merriweather:400,700,400italic,700italic|Open+Sans:400,300,800);
 @keyframes spinner {
   to {
     transform: rotate(360deg); } }
@@ -53,14 +53,14 @@
 
 @font-face {
   font-family: "dante";
-  src: url("../fonts/dante/fontello.eot");
-  src: url("../fonts/dante/fontello.eot?#iefix") format("embedded-opentype"), url("../fonts/dante/fontello.woff") format("woff"), url("../fonts/dante/fontello.ttf") format("truetype"), url("../fonts/dante/fontello.svgfontello") format("svg");
+  src: url("/static/libs/Dante/fonts/dante/fontello.eot");
+  src: url("/static/libs/Dante/fonts/dante/fontello.eot?#iefix") format("embedded-opentype"), url("/static/libs/Dante/fonts/dante/fontello.woff") format("woff"), url("/static/libs/Dante/fonts/dante/fontello.ttf") format("truetype"), url("/static/libs/Dante/fonts/dante/fontello.svgfontello") format("svg");
   font-weight: normal;
   font-style: normal; }
 @font-face {
   font-family: "dante-tooltip";
-  src: url("../fonts/dante/dante.eot");
-  src: url("../fonts/dante/dante.eot?#iefix") format("embedded-opentype"), url("../fonts/dante/dante.woff") format("woff"), url("../fonts/dante/dante.ttf") format("truetype"), url("../fonts/dante/dante.svgdante") format("svg");
+  src: url("/static/libs/Dante/fonts/dante/dante.eot");
+  src: url("/static/libs/Dante/fonts/dante/dante.eot?#iefix") format("embedded-opentype"), url("/static/libs/Dante/fonts/dante/dante.woff") format("woff"), url("/static/libs/Dante/fonts/dante/dante.ttf") format("truetype"), url("/static/libs/Dante/fonts/dante/dante.svgdante") format("svg");
   font-weight: normal;
   font-style: normal; }
 @-webkit-keyframes pop-upwards {

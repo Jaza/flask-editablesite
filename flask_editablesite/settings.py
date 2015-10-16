@@ -129,6 +129,14 @@ class Config(object):
             'weight_field': 'weight',
             'reorder_form_prefix': 'gallery_',
         },
+        'event': {
+            'classpath': 'flask_editablesite.event.models.Event',
+            'identifier_field': 'id',
+            'title_field': 'title',
+            'text_fields': ['title', 'event_url', 'location_name', 'location_url'],
+            'is_createable': True,
+            'is_deleteable': True,
+        },
     }
 
     EDITABLE_SAMPLE_IMAGES_SCRAPE_URL = os_env.get('FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_SCRAPE_URL', None)
@@ -146,6 +154,10 @@ class Config(object):
         or [])
     EDITABLE_PLACEHOLDER_TEXT = os_env.get('FLASK_EDITABLESITE_EDITABLE_PLACEHOLDER_TEXT', '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur enim magna, dignissim sit amet aliquet sed, varius sit amet tellus. Nam elementum, est non dignissim egestas, est turpis ornare nunc, ac ornare nisi purus id orci. Integer blandit sed leo eu tempus. Donec egestas nisl lectus, congue efficitur velit mollis mattis.</p>')
 
+    EDITABLE_SAMPLE_URLS = (os_env.get('FLASK_EDITABLESITE_EDITABLE_SAMPLE_URLS')
+        and ast.literal_eval(os_env.get('FLASK_EDITABLESITE_EDITABLE_SAMPLE_URLS'))
+        or ['http://google.com/', 'http://facebook.com/', 'http://youtube.com/', 'http://yahoo.com/', 'http://amazon.com/', 'http://wikipedia.org/', 'http://twitter.com/', 'http://live.com/', 'http://linkedin.com/', 'http://ebay.com/', 'http://bing.com/', 'http://instagram.com/'])
+
     EDITABLE_SAMPLE_IMAGES_CREDITS = os_env.get('FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_CREDITS', None)
     EDITABLE_SAMPLE_TEXT_CREDITS = os_env.get('FLASK_EDITABLESITE_EDITABLE_SAMPLE_TEXT_CREDITS', None)
 
@@ -154,6 +166,16 @@ class Config(object):
         or 6)
     GALLERY_LIMIT = (os_env.get('FLASK_EDITABLESITE_GALLERY_LIMIT')
         and ast.literal_eval(os_env.get('FLASK_EDITABLESITE_GALLERY_LIMIT'))
+        or 3)
+
+    EVENT_NUM_DEFAULT_ITEMS = (os_env.get('FLASK_EDITABLESITE_EVENT_NUM_DEFAULT_ITEMS')
+        and ast.literal_eval(os_env.get('FLASK_EDITABLESITE_EVENT_NUM_DEFAULT_ITEMS'))
+        or 12)
+    EVENT_UPCOMING_LIMIT = (os_env.get('FLASK_EDITABLESITE_EVENT_UPCOMING_LIMIT')
+        and ast.literal_eval(os_env.get('FLASK_EDITABLESITE_EVENT_UPCOMING_LIMIT'))
+        or 3)
+    EVENT_PAST_LIMIT = (os_env.get('FLASK_EDITABLESITE_EVENT_PAST_LIMIT')
+        and ast.literal_eval(os_env.get('FLASK_EDITABLESITE_EVENT_PAST_LIMIT'))
         or 3)
 
 

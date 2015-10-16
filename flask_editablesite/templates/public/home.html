@@ -205,6 +205,65 @@
 </div>
 {% endif %}
 
+<!-- Events -->
+<div class="row">
+  <div class="col-sm-12">
+
+{% with model_name = 'short_text_content_block' %}
+{% with field_name = 'content' %}
+{% with model_identifier = 'events-title' %}
+{% if stc_blocks[model_identifier].form is defined %}
+{% with form = stc_blocks[model_identifier].form %}
+
+{{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<h2 class="text-center">', wrap_element_end='</h2>') }}
+
+{% endwith %}
+{% else %}
+<div class="short-text-content">
+<h2 class="text-center">{{ stc_blocks[model_identifier].content }}</h2>
+</div>
+{% endif %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-5 col-lg-offset-1 col-sm-6">
+    <h3>Upcoming</h3>
+
+    {% if events_upcoming|length %}
+    {% for o in events_upcoming %}
+      {% with loop_index = loop.index %}
+      {% with events_limit = config.EVENT_UPCOMING_LIMIT %}
+      {% include 'event.html' %}
+      {% endwith %}
+      {% endwith %}
+    {% endfor %}
+    {% else %}{# events_upcoming|length #}
+    <p>No upcoming events.</p>
+    {% endif %}{# events_upcoming|length #}
+  </div>
+
+  <div class="col-lg-5 col-sm-6">
+    <h3>Past</h3>
+
+    {% if events_past|length %}
+    {% for o in events_past %}
+      {% with loop_index = loop.index %}
+      {% with events_limit = config.EVENT_PAST_LIMIT %}
+      {% include 'event.html' %}
+      {% endwith %}
+      {% endwith %}
+    {% endfor %}
+    {% else %}{# events_past|length #}
+    <p>No past events.</p>
+    {% endif %}{# events_past|length #}
+  </div>
+</div>
+
 <!-- About Section -->
 <div class="row">
   <div class="col-sm-12">

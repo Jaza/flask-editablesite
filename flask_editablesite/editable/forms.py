@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from wtforms import TextField, TextAreaField, HiddenField, FieldList, FormField
+from wtforms import TextField, TextAreaField, HiddenField, FieldList, FormField, DateField
+from wtforms_components import TimeField
 from wtforms.validators import DataRequired
 
 from flask_wtf import Form
@@ -28,6 +29,22 @@ class ImageEditForm(Form):
 
 class ImageOptionalEditForm(Form):
     image = FileField('Image', validators=[FileAllowed(('gif', 'jpg', 'jpeg', 'png'), 'Only image files (gif, jpg, png) can be uploaded for this field')])
+
+
+class DateEditForm(Form):
+    content = DateField('Date', format='%d %b %Y', validators=[DataRequired()])
+
+
+class DateOptionalEditForm(Form):
+    content = DateField('Date', format='%d %b %Y', validators=[])
+
+
+class TimeEditForm(Form):
+    content = DateField('Time', validators=[DataRequired()])
+
+
+class TimeOptionalEditForm(Form):
+    content = DateField('Time', validators=[])
 
 
 class ReorderItemForm(Form):

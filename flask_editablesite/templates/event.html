@@ -1,0 +1,149 @@
+{% import 'macros/short_text.html' as short_text %}
+
+<article class="events-item row"{% if (not event_forms) and (not is_events_showlimited) and (loop_index == events_limit+1) %} id="events-more"{% endif %}>
+  <div class="date-label-wrapper col-sm-2">
+    <p class="date-label">
+      <span class="date-number">{{ o.start_date.strftime('%d').lstrip('0') }}</span>
+      <span class="month">{{ o.start_date.strftime('%b') }}</span>
+      <span class="year-number">{{ o.start_date.strftime('%Y') }}</span>
+    </p>
+  </div>
+
+  <div class="details col-sm-10">
+    {% with model_name = 'event' %}
+    {% with field_name = 'title' %}
+    {% with model_identifier = o.id %}
+    {% if event_forms and (event_forms[model_identifier][field_name] is defined) %}
+    {% with form = event_forms[model_identifier][field_name] %}
+
+    {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder='Type your title', wrap_element_start='<h4>', wrap_element_end='</h4>') }}
+
+    {% endwith %}
+    {% else %}
+    <h4>{% if o.event_url %}<a href="{{ o.event_url }}">{% endif %}{{ o.title }}{% if o.event_url %}</a>{% endif %}</h4>
+    {% endif %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+
+    {% with model_name = 'event' %}
+    {% with field_name = 'event_url' %}
+    {% with model_identifier = o.id %}
+    {% if event_forms and (event_forms[model_identifier][field_name] is defined) %}
+    {% with form = event_forms[model_identifier][field_name] %}
+
+    {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder='Type your URL') }}
+
+    {% endwith %}
+    {% endif %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+
+    {% if 0 %}
+
+    {% if event_forms and (event_forms[o.id].start_date is defined) %}
+    {% with form = event_forms[o.id].start_date %}
+
+    {{ event_start_date.form(o.id, form) }}
+
+    {% endwith %}
+    {% endif %}
+
+    <p class="meta">
+      {% if event_forms and (event_forms[o.id].end_date is defined) %}
+      {% with form = event_forms[o.id].end_date %}
+
+      {{ event_end_date.form(o.id, form) }}
+
+      {% endwith %}
+
+      {% else %}{# event_forms and (event_forms[o.id].end_date is defined) #}
+
+      {% if o.end_date %}
+      <span class="time">
+        <i class="fa fa-calendar fa-fw"></i>
+
+        Goes until {{ o.end_date.strftime('%d').lstrip('0') }} {{ o.end_date.strftime('%b') }} {{ o.start_date.strftime('%Y') }}
+      </span>
+
+      <br />
+      {% endif %}
+
+      {% endif %}{# event_forms and (event_forms[o.id].end_date is defined) #}
+
+      {% if event_forms and (event_forms[o.id].start_time is defined) %}
+
+      {% with form = event_forms[o.id].start_time %}
+
+      {{ event_start_time.form(o.id, form) }}
+
+      {% endwith %}
+
+      {% with form = event_forms[o.id].end_time %}
+
+      {{ event_end_time.form(o.id, form) }}
+
+      {% endwith %}
+
+      {% else %}{# event_forms and (event_forms[o.id].start_time is defined) #}
+
+      {% if o.start_time %}
+      <span class="time">
+        <i class="fa fa-clock-o fa-fw"></i>
+
+        {{ o.start_time.strftime('%I:%M%p').lstrip('0').lower() }}
+
+        {% if o.end_time %}
+        -
+        {{ o.end_time.strftime('%I:%M%p').lstrip('0').lower() }}
+        {% endif %}
+      </span>
+
+      <br />
+      {% endif %}{# event_forms and (event_forms[o.id].start_time is defined) #}
+
+      {% endif %}
+
+      {% if event_forms and (event_forms[o.id].location_name is defined) %}
+
+      {% with form = event_forms[o.id].location_name %}
+
+      {{ event_location_name.form(o.id, form) }}
+
+      {% endwith %}
+
+      {% with form = event_forms[o.id].location_url %}
+
+      {{ event_location_url.form(o.id, form) }}
+
+      {% endwith %}
+
+      {% else %}{# event_forms and (event_forms[o.id].location_name is defined) #}
+
+      {% if o.location_name %}
+      <span class="location"><i class="fa fa-map-marker fa-fw"></i>
+        {% if o.location_url %}<a href="{{ o.location_url }}">{% endif %}
+          {{ o.location_name }}
+        {% if o.location_url %}</a>{% endif %}
+      </span>
+      {% endif %}
+
+      {% endif %}{# event_forms and (event_forms[o.id].location_name is defined) #}
+    </p>
+
+    {% endif %}{# 0 #}
+  </div>
+
+  {% if event_forms and (event_forms[o.id].delete is defined) %}
+  {% with form = event_forms[o.id].delete %}
+  <form method="POST" action="{{ url_for('editable.delete', model_name='event', model_identifier=o.id) }}" id="event-delete-{{ o.id }}" class="form-delete-item">
+    {{ form.hidden_tag() }}
+
+    <button type="submit" class="btn btn-danger delete-confirm-link" data-delete-confirm-item-type="delete this event">
+      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+    </button>
+  </form>
+  {% endwith %}
+  {% endif %}
+</article>

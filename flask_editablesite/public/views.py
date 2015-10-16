@@ -13,6 +13,7 @@ from flask_editablesite.extensions import login_manager
 from flask_editablesite.user.models import User
 from flask_editablesite.contentblock.models import ShortTextContentBlock, RichTextContentBlock, ImageContentBlock
 from flask_editablesite.gallery.models import GalleryItem
+from flask_editablesite.event.models import Event
 from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, ImageEditForm, ReorderForm
 from flask_editablesite.editable.sample_images import placeholder_or_random_sample_image
 from flask_editablesite.editable.sample_text import placeholder_or_random_sample_text

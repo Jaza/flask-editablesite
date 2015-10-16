@@ -100,6 +100,20 @@ Or, to store it in Memcached ::
     export FLASK_EDITABLESITE_SESSION_MEMCACHED="your.memcached.host:11211"
 
 
+Creating users
+--------------
+
+When in normal (DB) mode, you'll need to create a user in order to log in and start editing. For the sake of simplicity, and in order to maintain the "no admin area" ideal, this app doesn't include any GUI for creating or managing users. If you need a GUI for user management, or for anything else, there are plenty of Flask packages that can help you out, with the best candidate being `Flask-Admin <https://flask-admin.readthedocs.org/>`_.
+
+To create a user, run this command ::
+
+    python manage.py createuser
+
+And enter an email and password when prompted. You will then be able to log in. Also, again for simplicity, this app doesn't include any definition or management of user roles: if a user exists and is active, then he/she can log in and edit everything, end of story. For many small sites, this is all that's needed anyway.
+
+When in session store mode, the app makes one user account available for login purposes. The default email and password for this user is ``test@test.com`` and ``test``, respectively. You can override these by setting the ``FLASK_EDITABLESITE_SESSIONSTORE_USER_EMAIL`` and ``FLASK_EDITABLESITE_SESSIONSTORE_USER_PASSWORD`` environment variables. The login email and password are shown on the home page when logged out, so that users demo'ing the app have easy access to the credentials.
+
+
 Sample content
 --------------
 
@@ -129,6 +143,10 @@ Set the following environment variables, and the app will randomly source images
     export FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_RELATIVE_PATH="coolexamplephotos/"
 
 Where ``FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_SCRAPE_URL`` is the URL of the page to scrape, ``FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_SCRAPE_PARENTELNAME`` is the parent element of the image links, and ``FLASK_EDITABLESITE_EDITABLE_SAMPLE_IMAGES_RELATIVE_PATH`` is the relative directory in which to store the downloaded images on the filesystem.
+
+To pre-download the sample images for faster access, use the ``downloadsampleimages`` command like so ::
+
+    python manage.py downloadsampleimages --url="http://coolexamplephotos.com/" --targetdir=./flask_editablesite/static/uploads/coolexamplephotos --parentelname="li"
 
 For the "sample text" functionality, you can configure one or more URLs of texts to use as source material. The texts can be anything (e.g. "lorem ipsum" blurb, blog posts, encyclopaedia entries), and can be in any text format (e.g. HTML, RSS, CSV); but books in plain text are recommended.
 

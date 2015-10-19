@@ -83,22 +83,23 @@ def register_loggers(app):
         app.logger.addHandler(stream_handler)
         app.logger.setLevel(logging.INFO)
 
-        smtp_handler_args = {}
-        if app.config.get('MAIL_USERNAME'):
-            smtp_handler_args['credentials'] = (
-                app.config['MAIL_USERNAME'],
-                app.config['MAIL_PASSWORD'])
-            smtp_handler_args['secure'] = ()
+        if app.config['ADMINS']:
+            smtp_handler_args = {}
+            if app.config.get('MAIL_USERNAME'):
+                smtp_handler_args['credentials'] = (
+                    app.config['MAIL_USERNAME'],
+                    app.config['MAIL_PASSWORD'])
+                smtp_handler_args['secure'] = ()
 
-        mail_handler = SMTPHandler(
-            (app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
-            app.config['MAIL_DEFAULT_SENDER'],
-            app.config['ADMINS'],
-            ('[%s] Error report' % app.config['SITE_NAME']),
-            **smtp_handler_args)
-        mail_handler.setLevel(logging.ERROR)
-        mail_handler.setFormatter(
-            logging.Formatter(app.config['ERROR_MAIL_FORMAT']))
-        app.logger.addHandler(mail_handler)
+            mail_handler = SMTPHandler(
+                (app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
+                app.config['MAIL_DEFAULT_SENDER'],
+                app.config['ADMINS'],
+                ('[%s] Error report' % app.config['SITE_NAME']),
+                **smtp_handler_args)
+            mail_handler.setLevel(logging.ERROR)
+            mail_handler.setFormatter(
+                logging.Formatter(app.config['ERROR_MAIL_FORMAT']))
+            app.logger.addHandler(mail_handler)
 
         app.logger.info('flask_editablesite startup')

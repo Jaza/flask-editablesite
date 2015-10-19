@@ -52,7 +52,7 @@ class Config(object):
 
     ADMINS = (os_env.get('FLASK_EDITABLESITE_ADMINS')
         and os_env.get('FLASK_EDITABLESITE_ADMINS').split(',')
-        or ['sitedevdude@nonexistentemailaddress.com'])
+        or [])
 
     MAIL_DEFAULT_SENDER = os_env.get('FLASK_EDITABLESITE_MAIL_DEFAULT_SENDER', 'sender@nonexistentemailaddress.com')
     CONTACT_EMAIL_RECIPIENTS = (os_env.get('FLASK_EDITABLESITE_CONTACT_EMAIL_RECIPIENTS')

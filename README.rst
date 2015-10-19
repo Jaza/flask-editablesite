@@ -16,8 +16,6 @@ It also includes utilities for adding to, re-ordering, and deleting from lists o
 Here's a `demo of the app in action
 <https://flask-editablesite.herokuapp.com/>`_.
 
-This project is still **under active development**. I hope to have it mainly finished within the next week or so (as of 14 Oct 2015).
-
 The aim of this app is to demonstrate that, with the help of modern JS libraries, and with some well-thought-out server-side snippets, it's now perfectly possible to "bake in" live in-place editing for virtually every content element in a typical brochureware site.
 
 This app is not a CMS. On the contrary, think of it as a proof-of-concept alternative to a CMS. An alternative where there's no "admin area", there's no "editing mode", and there's no "preview button". There's only direct manipulation.

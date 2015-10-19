@@ -19,6 +19,8 @@ css_admin = Bundle(
 js = Bundle(
     "libs/jQuery/dist/jquery.js",
     "libs/bootstrap/dist/js/bootstrap.min.js",
+    "libs/jquery-easing/jquery.easing.js",
+    "js/pagescroll.js",
     filters='jsmin',
     output="public/js/common.js"
 )

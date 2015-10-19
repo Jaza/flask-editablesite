@@ -45,6 +45,8 @@ def load_user(id):
 
 @blueprint.route("/")
 def home():
+    raise Exception('oops')
+
     if current_user.is_authenticated() and (not current_user.active):
         logout_user()
 

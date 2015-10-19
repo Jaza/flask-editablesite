@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
 from flask import current_app as app
 from flask_wtf import Form
-from wtforms import TextField, PasswordField
-from wtforms.validators import DataRequired
+from wtforms import TextField, TextAreaField, PasswordField
+from wtforms.validators import DataRequired, Email
 
 from flask_editablesite.user.models import User
+
+
+class ContactForm(Form):
+    name = TextField('Name', validators=[DataRequired()])
+    email = TextField('Email Address', validators=[DataRequired(), Email()])
+    phone = TextField('Phone Number', validators=[])
+    message = TextAreaField('Message', validators=[DataRequired()])
 
 
 class LoginForm(Form):

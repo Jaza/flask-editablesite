@@ -63,6 +63,10 @@ class ShortTextContentBlock(SurrogatePK, Slugged, TimeStamped, Confirmable, Mode
         slug = slugify(title, to_lower=True)
         ret[slug] = cls(title=title, slug=slug, content='Events', active=True)
 
+        title = 'Contact title'
+        slug = slugify(title, to_lower=True)
+        ret[slug] = cls(title=title, slug=slug, content='Contact', active=True)
+
         return ret
 
 

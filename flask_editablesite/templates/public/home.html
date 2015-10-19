@@ -389,7 +389,80 @@
   </div>
 </div>
 
+<!-- Contact Section -->
+<div class="row">
+  <div class="col-sm-12">
+
+{% with model_name = 'short_text_content_block' %}
+{% with field_name = 'content' %}
+{% with model_identifier = 'contact-title' %}
+{% if stc_blocks[model_identifier].form is defined %}
+{% with form = stc_blocks[model_identifier].form %}
+
+{{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder=stc_blocks[model_identifier].title, wrap_element_start='<h2 class="text-center">', wrap_element_end='</h2>') }}
+
+{% endwith %}
+{% else %}
+<div class="short-text-content">
+<h2 class="text-center">{{ stc_blocks[model_identifier].content }}</h2>
+</div>
+{% endif %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <form method="POST" action="{{ url_for('public.contact') }}" name="sentMessage" id="contactForm" class="form">
+      {{ contact_form.hidden_tag() }}
+
+      <div class="row control-group">
+        <div class="form-group col-xs-12 floating-label-form-group controls">
+          {{ contact_form.name.label }}
+          <input type="text" class="form-control" placeholder="Name" id="name" name="name" required>
+          <p class="help-block text-danger"></p>
+        </div>
+      </div>
+      <div class="row control-group">
+        <div class="form-group col-xs-12 floating-label-form-group controls">
+          {{ contact_form.email.label }}
+          <input type="email" class="form-control" placeholder="Email Address" id="email" name="email" required>
+          <p class="help-block text-danger"></p>
+        </div>
+      </div>
+      <div class="row control-group">
+        <div class="form-group col-xs-12 floating-label-form-group controls">
+          {{ contact_form.phone.label }}
+          <input type="tel" class="form-control" placeholder="Phone Number" id="phone" name="phone" required>
+          <p class="help-block text-danger"></p>
+        </div>
+      </div>
+      <div class="row control-group">
+        <div class="form-group col-xs-12 floating-label-form-group controls">
+          {{ contact_form.message.label }}
+          <textarea rows="5" class="form-control" placeholder="Message" id="message" name="message" required></textarea>
+          <p class="help-block text-danger"></p>
+        </div>
+      </div>
+      <br>
+      <div id="success"></div>
+      <div class="row">
+        <div class="form-group col-xs-12">
+          <button type="submit" class="btn btn-success btn-lg" id="btnSubmit">Send</button>
+        </div>
+
+        <br>&nbsp;<br>
+      </div>
+    </form>
+  </div>
+</div>
+
 {% if not current_user.is_authenticated() %}
+
+<!-- Login instructions / content credits -->
 <div class="row greybox">
   <div class="col-sm-{% if config.EDITABLE_SAMPLE_IMAGES_CREDITS and config.EDITABLE_SAMPLE_TEXT_CREDITS %}4{% elif config.EDITABLE_SAMPLE_IMAGES_CREDITS or config.EDITABLE_SAMPLE_TEXT_CREDITS %}6{% else %}12{% endif %}">
 
@@ -442,6 +515,7 @@ use the credentials that have been provided to you by the site administrators.
   </div>
   {% endif %}
 </div>
+
 {% endif %}{# not current_user.is_authenticated() #}
 
 </div><!-- /.body-content -->

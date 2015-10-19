@@ -57,7 +57,7 @@ class Config(object):
     MAIL_DEFAULT_SENDER = os_env.get('FLASK_EDITABLESITE_MAIL_DEFAULT_SENDER', 'sender@nonexistentemailaddress.com')
     CONTACT_EMAIL_RECIPIENTS = (os_env.get('FLASK_EDITABLESITE_CONTACT_EMAIL_RECIPIENTS')
         and os_env.get('FLASK_EDITABLESITE_CONTACT_EMAIL_RECIPIENTS').split(',')
-        or ['recipient@nonexistentemailaddress.com'])
+        or [])
 
     MAIL_SERVER = os_env.get('FLASK_EDITABLESITE_MAIL_SERVER', 'localhost')
     MAIL_PORT = (os_env.get('FLASK_EDITABLESITE_MAIL_PORT')

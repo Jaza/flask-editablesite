@@ -9,10 +9,11 @@ from flask import current_app as app
 from flask import (Blueprint, request, render_template, flash, url_for,
                     redirect, session, send_from_directory)
 from flask_wtf import Form
+from flask_mail import Message
 from flask_login import (login_user, login_required, logout_user,
                          current_user)
 
-from flask_editablesite.extensions import login_manager
+from flask_editablesite.extensions import db, login_manager, mail
 from flask_editablesite.user.models import User
 from flask_editablesite.contentblock.models import ShortTextContentBlock, RichTextContentBlock, ImageContentBlock
 from flask_editablesite.gallery.models import GalleryItem
@@ -20,7 +21,7 @@ from flask_editablesite.event.models import Event
 from flask_editablesite.editable.forms import TextEditForm, TextOptionalEditForm, LongTextEditForm, ImageEditForm, ReorderForm, DateEditForm, DateOptionalEditForm, TimeOptionalEditForm
 from flask_editablesite.editable.sample_images import placeholder_or_random_sample_image
 from flask_editablesite.editable.sample_text import placeholder_or_random_sample_text
-from flask_editablesite.public.forms import LoginForm
+from flask_editablesite.public.forms import LoginForm, ContactForm
 from flask_editablesite.utils import flash_errors
 from flask_editablesite.database import db
 
@@ -49,6 +50,7 @@ def home():
         logout_user()
 
     login_form = (not current_user.is_authenticated()) and LoginForm() or None
+    contact_form = ContactForm()
 
     # Short text blocks
     stc_blocks = {
@@ -438,6 +440,7 @@ def home():
 
     template_vars = dict(
         login_form=login_form,
+        contact_form=contact_form,
         stc_blocks=stc_blocks,
         rtc_blocks=rtc_blocks,
         ic_blocks=ic_blocks,
@@ -454,6 +457,47 @@ def home():
 
     return render_template("public/home.html",
                            **template_vars)
+
+
+@blueprint.route("/contact/", methods=["POST"])
+def contact():
+    form = ContactForm(request.form)
+
+    if form.validate_on_submit():
+        subject = "New message from {0} contact form".format(app.config['SITE_NAME'])
+
+        body = "\nFrom: {0} <{1}>\n".format(
+            form.name.data,
+            form.email.data)
+
+        if form.phone.data:
+            body += "Phone: {0}\n".format(form.phone.data)
+
+        body += "\n\n{0}\n\n-----\n\n".format(form.message.data)
+        body += "This is an auto-generated email from {0}.\n".format(app.config['SITE_NAME'])
+
+        log_msg = "Contact form submission\n"
+        log_msg += "Sent by: <{0}>\n".format(app.config['MAIL_DEFAULT_SENDER'])
+        log_msg += "Sent to: {0}\n".format(app.config['CONTACT_EMAIL_RECIPIENTS'])
+        log_msg += "Subject: {0}\n".format(subject)
+        log_msg += body
+
+        app.logger.info(log_msg)
+
+        if (not app.debug) and app.config['CONTACT_EMAIL_RECIPIENTS']:
+            msg = Message(
+                subject,
+                recipients=app.config['CONTACT_EMAIL_RECIPIENTS'])
+
+            msg.body = body
+
+            mail.send(msg)
+
+        flash("Your message has been sent.", 'success')
+    else:
+        flash_errors(form)
+
+    return redirect(url_for("public.home"))
 
 
 @blueprint.route("/login/", methods=["POST"])

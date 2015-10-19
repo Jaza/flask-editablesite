@@ -598,7 +598,7 @@ def add_func(model_name, is_autosave=False):
     try:
         weight_field_name = v['weight_field']
     except KeyError:
-        pass
+        weight_field_name = None
 
     model_class = get_model_class(model_classpath, model_name)
 

@@ -267,6 +267,55 @@ a.add-plus, a.add-plus:hover, a.add-plus:focus {
 
 
 
+/* EVENTS */
+
+.events-item {
+  margin-top: 20px;
+  position: relative;
+}
+
+.date-label-wrapper {
+  margin-top: 10px;
+}
+
+.date-label {
+  background-color: #eee;
+  display: inline-block;
+  width: 40px;
+  height: 76px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.date-label .date-number {
+  clear: left;
+  display: block;
+  padding-top: 5px;
+  font-size: 20px;
+}
+
+.date-label .month {
+  background-color: #069;
+  color: #fff;
+  display: block;
+  font-size: 13px;
+  text-transform: uppercase;
+  padding: 1px 0;
+}
+
+.date-label .year-number {
+  clear: left;
+  display: block;
+  padding: 3px 0 5px;
+  font-size: 11px;
+}
+
+.events-item .details .fa {
+  margin-right: 5px;
+}
+
+
+
 /* FOOTER */
 
 footer {

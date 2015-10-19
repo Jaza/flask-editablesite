@@ -1,0 +1,31 @@
+{% import 'macros/heading.html' as heading %}
+
+{% macro form(model_name, field_name, model_identifier, form, class='datepicker-enable', placeholder='Pick your date', wrap_element_start='', wrap_element_end='') %}
+
+{% set model_identifier = model_identifier|string %}
+
+{% with field_id = (model_name + '-' + field_name + '-' + model_identifier) %}
+
+<form id="date-pick-form-{{ field_id }}" method="POST" class="form-editable{% if wrap_element_start == '<span>' %} form-editable-inline{% endif %}" action="{{ url_for('editable.date_update', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" data-autosave-url="{{ url_for('editable.date_update_autosave', model_name=model_name, field_name=field_name, model_identifier=model_identifier) }}" data-autosave-field-id="{{ field_id }}">
+  {{ form.hidden_tag() }}
+
+  {% if wrap_element_start == '<span>' %}
+    {% set wrap_el_type = 'span' %}
+  {% else %}
+    {% set wrap_el_type = 'div' %}
+  {% endif %}
+
+  <{{ wrap_el_type }} class="title-image-wrapper"><{{ wrap_el_type }} class="editable-wrapper">
+    {{ heading.field(form.content, field_id=field_id, class=class, placeholder=placeholder, wrap_element_start=wrap_element_start, wrap_element_end=wrap_element_end) }}
+  </{{ wrap_el_type }}></{{ wrap_el_type }}>
+
+  <div class="form-editable-button">
+  <button type="submit" class="btn btn-default">Update</button>
+  </div>
+
+  {% include 'autosave_status.html' %}
+</form>
+
+{% endwith %}
+
+{% endmacro %}

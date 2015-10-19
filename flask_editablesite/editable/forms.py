@@ -40,11 +40,11 @@ class DateOptionalEditForm(Form):
 
 
 class TimeEditForm(Form):
-    content = DateField('Time', validators=[DataRequired()])
+    content = TimeField('Time', validators=[DataRequired()])
 
 
 class TimeOptionalEditForm(Form):
-    content = DateField('Time', validators=[])
+    content = TimeField('Time', validators=[])
 
 
 class ReorderItemForm(Form):

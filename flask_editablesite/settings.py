@@ -134,6 +134,8 @@ class Config(object):
             'identifier_field': 'id',
             'title_field': 'title',
             'text_fields': ['title', 'event_url', 'location_name', 'location_url'],
+            'date_fields': ['start_date', 'end_date'],
+            'time_fields': ['start_time', 'end_time'],
             'is_createable': True,
             'is_deleteable': True,
         },

@@ -264,6 +264,34 @@
   </div>
 </div>
 
+{% if event_add_form %}
+<div class="row">
+  <div class="col-lg-12 text-center">
+    <form method="POST" action="{{ url_for('editable.add', model_name='event') }}" id="event-add" class="form-add-plus">
+      {{ gi_add_form.hidden_tag() }}
+
+      <button type="submit" class="add-plus">
+        <div class="add-plus-caption">&nbsp;<span>Add an event</span>&nbsp;</div>
+        <div class="add-plus-wrapper"><span class="fa fa-plus"></span></div>
+      </button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% if is_events_showlimited %}
+<div class="row">
+  <div class="col-lg-12 text-center">
+    <div class="form-add-plus">
+      <a href="{{ url_for('public.home') }}?events_showmore=1#events-more" class="add-plus">
+        <div class="add-plus-caption">&nbsp;<span>Show more</span>&nbsp;</div>
+        <div class="add-plus-wrapper"><span class="fa fa-plus"></span></div>
+      </a>
+    </div>
+   </div>
+</div>
+{% endif %}
+
 <!-- About Section -->
 <div class="row">
   <div class="col-sm-12">

@@ -42,16 +42,19 @@ class Event(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
         return self.title
 
     @classmethod
-    def new_item(cls, title_prefix='New '):
+    def new_item(cls, title_prefix='New ', rand_start_date=False):
         rand_str = ''.join(random.choice(string.ascii_lowercase) for _ in range(10))
         title = '{0}Event {1}'.format(title_prefix, rand_str)
         slug = slugify(title, to_lower=True)
 
         # Make start date a random date within 5 years of today
         date_now = date.today()
-        fiveyears_indays = 365 * 5
-        rand_delta = timedelta(days=random.randrange(-fiveyears_indays, fiveyears_indays))
-        start_date = date_now + rand_delta
+        start_date = date_now
+
+        if rand_start_date:
+            fiveyears_indays = 365 * 5
+            rand_delta = timedelta(days=random.randrange(-fiveyears_indays, fiveyears_indays))
+            start_date += rand_delta
 
         start_time = None
         # Toss a coin to see if we set a start time or not
@@ -106,7 +109,7 @@ class Event(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
 
     @classmethod
     def default_content(cls):
-        return [cls.new_item(title_prefix='Sample ')
+        return [cls.new_item(title_prefix='Sample ', rand_start_date=True)
             for i in range(app.config['EVENT_NUM_DEFAULT_ITEMS'])]
 
 

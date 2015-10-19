@@ -1,4 +1,6 @@
 {% import 'macros/short_text.html' as short_text %}
+{% import 'macros/date_pick.html' as date_pick %}
+{% import 'macros/time_pick.html' as time_pick %}
 
 <article class="events-item row"{% if (not event_forms) and (not is_events_showlimited) and (loop_index == events_limit+1) %} id="events-more"{% endif %}>
   <div class="date-label-wrapper col-sm-2">
@@ -40,25 +42,32 @@
     {% endwith %}
     {% endwith %}
 
-    {% if 0 %}
+    {% with model_name = 'event' %}
+    {% with field_name = 'start_date' %}
+    {% with model_identifier = o.id %}
+    {% if event_forms and (event_forms[model_identifier][field_name] is defined) %}
+    {% with form = event_forms[model_identifier][field_name] %}
 
-    {% if event_forms and (event_forms[o.id].start_date is defined) %}
-    {% with form = event_forms[o.id].start_date %}
-
-    {{ event_start_date.form(o.id, form) }}
+    {{ date_pick.form(model_name, field_name, model_identifier, form, placeholder='Pick your start date') }}
 
     {% endwith %}
     {% endif %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
 
     <p class="meta">
-      {% if event_forms and (event_forms[o.id].end_date is defined) %}
-      {% with form = event_forms[o.id].end_date %}
+      {% with model_name = 'event' %}
+      {% with field_name = 'end_date' %}
+      {% with model_identifier = o.id %}
+      {% if event_forms and (event_forms[model_identifier][field_name] is defined) %}
+      {% with form = event_forms[model_identifier][field_name] %}
 
-      {{ event_end_date.form(o.id, form) }}
+      {{ date_pick.form(model_name, field_name, model_identifier, form, placeholder='Pick your end date') }}
 
       {% endwith %}
 
-      {% else %}{# event_forms and (event_forms[o.id].end_date is defined) #}
+      {% else %}{# if event_forms and (event_forms[model_identifier][field_name] is defined) #}
 
       {% if o.end_date %}
       <span class="time">
@@ -70,23 +79,37 @@
       <br />
       {% endif %}
 
-      {% endif %}{# event_forms and (event_forms[o.id].end_date is defined) #}
+      {% endif %}{# if event_forms and (event_forms[model_identifier][field_name] is defined) #}
 
-      {% if event_forms and (event_forms[o.id].start_time is defined) %}
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
 
-      {% with form = event_forms[o.id].start_time %}
+      {% with model_name = 'event' %}
+      {% with field_name = 'start_time' %}
+      {% with model_identifier = o.id %}
+      {% if event_forms and (event_forms[model_identifier][field_name] is defined) %}
+      {% with form = event_forms[model_identifier][field_name] %}
 
-      {{ event_start_time.form(o.id, form) }}
+      {{ time_pick.form(model_name, field_name, model_identifier, form, placeholder='Pick your start time') }}
 
       {% endwith %}
 
-      {% with form = event_forms[o.id].end_time %}
+      {% with model_name = 'event' %}
+      {% with field_name = 'end_time' %}
+      {% with model_identifier = o.id %}
+      {% if event_forms and (event_forms[model_identifier][field_name] is defined) %}
+      {% with form = event_forms[model_identifier][field_name] %}
 
-      {{ event_end_time.form(o.id, form) }}
+      {{ time_pick.form(model_name, field_name, model_identifier, form, placeholder='Pick your end time') }}
 
       {% endwith %}
+      {% endif %}
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
 
-      {% else %}{# event_forms and (event_forms[o.id].start_time is defined) #}
+      {% else %}{# if event_forms and (event_forms[model_identifier][field_name] is defined) #}
 
       {% if o.start_time %}
       <span class="time">
@@ -101,25 +124,41 @@
       </span>
 
       <br />
-      {% endif %}{# event_forms and (event_forms[o.id].start_time is defined) #}
-
       {% endif %}
 
-      {% if event_forms and (event_forms[o.id].location_name is defined) %}
+      {% endif %}{# if event_forms and (event_forms[model_identifier][field_name] is defined) #}
 
-      {% with form = event_forms[o.id].location_name %}
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
 
-      {{ event_location_name.form(o.id, form) }}
+      {% with model_name = 'event' %}
+      {% with field_name = 'location_name' %}
+      {% with model_identifier = o.id %}
+
+      {% if event_forms and (event_forms[model_identifier][field_name] is defined) %}
+
+      {% with form = event_forms[model_identifier][field_name] %}
+
+      {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder='Type your location name') }}
 
       {% endwith %}
 
-      {% with form = event_forms[o.id].location_url %}
+      {% with model_name = 'event' %}
+      {% with field_name = 'location_url' %}
+      {% with model_identifier = o.id %}
+      {% if event_forms and (event_forms[model_identifier][field_name] is defined) %}
+      {% with form = event_forms[model_identifier][field_name] %}
 
-      {{ event_location_url.form(o.id, form) }}
+      {{ short_text.form(model_name, field_name, model_identifier, form, class='', placeholder='Type your location URL') }}
 
       {% endwith %}
+      {% endif %}
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
 
-      {% else %}{# event_forms and (event_forms[o.id].location_name is defined) #}
+      {% else %}{# event_forms and (event_forms[model_identifier][field_name] is defined) #}
 
       {% if o.location_name %}
       <span class="location"><i class="fa fa-map-marker fa-fw"></i>
@@ -129,10 +168,14 @@
       </span>
       {% endif %}
 
-      {% endif %}{# event_forms and (event_forms[o.id].location_name is defined) #}
+      {% endif %}{# event_forms and (event_forms[model_identifier][field_name] is defined) #}
+
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
+
     </p>
 
-    {% endif %}{# 0 #}
   </div>
 
   {% if event_forms and (event_forms[o.id].delete is defined) %}

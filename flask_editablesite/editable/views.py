@@ -13,7 +13,7 @@ from werkzeug import secure_filename
 from flask_wtf import Form
 
 from flask_editablesite.extensions import db
-from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, ImageEditForm, ReorderForm
+from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, DateEditForm, TimeEditForm, ImageEditForm, ReorderForm
 from flask_editablesite.editable.utils import get_model_class
 from flask_editablesite.editable.sample_images import placeholder_or_random_sample_image
 from flask_editablesite.editable.sample_text import placeholder_or_random_sample_text
@@ -144,6 +144,252 @@ def text_update(model_name, field_name, model_identifier):
 @login_required
 def text_update_autosave(model_name, field_name, model_identifier):
     return text_update_func(
+        model_name=model_name,
+        field_name=field_name,
+        model_identifier=model_identifier,
+        is_autosave=True)
+
+
+def date_update_func(model_name, field_name, model_identifier, is_autosave=False):
+    try:
+        v = app.config['EDITABLE_MODELS'][model_name]
+    except KeyError:
+        abort(404)
+
+    if not(('date_fields' in v) and (field_name in v['date_fields'])):
+        abort(404)
+
+    try:
+        model_classpath = v['classpath']
+    except KeyError:
+        raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
+
+    try:
+        identifier_field_name = v['identifier_field']
+    except KeyError:
+        raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+
+    try:
+        title_field_name = v['title_field']
+    except KeyError:
+        raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+
+    model_class = get_model_class(model_classpath, model_name)
+
+    try:
+        model_identifier_int = int(model_identifier)
+    except ValueError:
+        model_identifier_int = None
+
+    filter_by_kwargs = {
+        identifier_field_name: model_identifier,
+        'active': True}
+    model = None
+
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        model_store = session.get(model_name, None)
+        model_dict = None
+
+        if model_store and (type(model_store).__name__ == 'list'):
+            try:
+                model_dict = model_store[model_identifier_int]
+            except KeyError:
+                pass
+        elif model_store and (type(model_store).__name__ == 'dict'):
+            model_dict = model_store.get(model_identifier, None)
+
+        if model_dict:
+            model = model_class(**model_dict)
+    else:
+        model = (model_class.query
+            .filter_by(**filter_by_kwargs)
+            .first())
+
+    if not model:
+        try:
+            model = model_class.default_content()[model_identifier]
+        except KeyError:
+            abort(404)
+
+    form = DateEditForm()
+
+    if form.validate_on_submit():
+        content = form.content.data
+
+        try:
+            if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+                if session.get(model_name) == None:
+                    session[model_name] = {}
+
+                if not model_identifier_int:
+                    if not (session.get(model_name, {})
+                            .get(model_identifier, None)):
+                        session[model_name][model_identifier] = {
+                            title_field_name: getattr(model, title_field_name)}
+
+                session[model_name][(model_identifier_int or model_identifier)][field_name] = content.strftime('%Y-%m-%d')
+            else:
+                setattr(model, field_name, content)
+                model.save()
+
+            app.logger.info('{0} updated: {1}; user: {2}'.format(model_name.replace('_', ' ').capitalize(), model, current_user))
+
+            if is_autosave:
+                return Response('OK')
+            else:
+                flash("{0} has been updated.".format(getattr(model, title_field_name)), 'success')
+        except IntegrityError as e:
+            db.session.rollback()
+
+            if is_autosave:
+                return Response('ERROR', 400)
+            else:
+                flash("Error updating {0}.".format(getattr(model, title_field_name)), 'danger')
+    else:
+        if is_autosave:
+            return Response('ERROR', 400)
+        else:
+            flash_errors(form)
+
+    return redirect(url_for("public.home"))
+
+
+@blueprint.route("/date-update/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@login_required
+def date_update(model_name, field_name, model_identifier):
+    return date_update_func(
+        model_name=model_name,
+        field_name=field_name,
+        model_identifier=model_identifier)
+
+
+@blueprint.route("/date-update-autosave/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@login_required
+def date_update_autosave(model_name, field_name, model_identifier):
+    return date_update_func(
+        model_name=model_name,
+        field_name=field_name,
+        model_identifier=model_identifier,
+        is_autosave=True)
+
+
+def time_update_func(model_name, field_name, model_identifier, is_autosave=False):
+    try:
+        v = app.config['EDITABLE_MODELS'][model_name]
+    except KeyError:
+        abort(404)
+
+    if not(('time_fields' in v) and (field_name in v['time_fields'])):
+        abort(404)
+
+    try:
+        model_classpath = v['classpath']
+    except KeyError:
+        raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
+
+    try:
+        identifier_field_name = v['identifier_field']
+    except KeyError:
+        raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+
+    try:
+        title_field_name = v['title_field']
+    except KeyError:
+        raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+
+    model_class = get_model_class(model_classpath, model_name)
+
+    try:
+        model_identifier_int = int(model_identifier)
+    except ValueError:
+        model_identifier_int = None
+
+    filter_by_kwargs = {
+        identifier_field_name: model_identifier,
+        'active': True}
+    model = None
+
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        model_store = session.get(model_name, None)
+        model_dict = None
+
+        if model_store and (type(model_store).__name__ == 'list'):
+            try:
+                model_dict = model_store[model_identifier_int]
+            except KeyError:
+                pass
+        elif model_store and (type(model_store).__name__ == 'dict'):
+            model_dict = model_store.get(model_identifier, None)
+
+        if model_dict:
+            model = model_class(**model_dict)
+    else:
+        model = (model_class.query
+            .filter_by(**filter_by_kwargs)
+            .first())
+
+    if not model:
+        try:
+            model = model_class.default_content()[model_identifier]
+        except KeyError:
+            abort(404)
+
+    form = TimeEditForm()
+
+    if form.validate_on_submit():
+        content = form.content.data
+
+        try:
+            if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+                if session.get(model_name) == None:
+                    session[model_name] = {}
+
+                if not model_identifier_int:
+                    if not (session.get(model_name, {})
+                            .get(model_identifier, None)):
+                        session[model_name][model_identifier] = {
+                            title_field_name: getattr(model, title_field_name)}
+
+                session[model_name][(model_identifier_int or model_identifier)][field_name] = content.strftime('%H:%M:%S')
+            else:
+                setattr(model, field_name, content)
+                model.save()
+
+            app.logger.info('{0} updated: {1}; user: {2}'.format(model_name.replace('_', ' ').capitalize(), model, current_user))
+
+            if is_autosave:
+                return Response('OK')
+            else:
+                flash("{0} has been updated.".format(getattr(model, title_field_name)), 'success')
+        except IntegrityError as e:
+            db.session.rollback()
+
+            if is_autosave:
+                return Response('ERROR', 400)
+            else:
+                flash("Error updating {0}.".format(getattr(model, title_field_name)), 'danger')
+    else:
+        if is_autosave:
+            return Response('ERROR', 400)
+        else:
+            flash_errors(form)
+
+    return redirect(url_for("public.home"))
+
+
+@blueprint.route("/time-update/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@login_required
+def time_update(model_name, field_name, model_identifier):
+    return time_update_func(
+        model_name=model_name,
+        field_name=field_name,
+        model_identifier=model_identifier)
+
+
+@blueprint.route("/time-update-autosave/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@login_required
+def time_update_autosave(model_name, field_name, model_identifier):
+    return time_update_func(
         model_name=model_name,
         field_name=field_name,
         model_identifier=model_identifier,
@@ -387,6 +633,22 @@ def add_func(model_name, is_autosave=False):
                 values_to_save = {}
                 for k in fields_to_save:
                     values_to_save[k] = getattr(model, k)
+
+                if ('date_fields' in v) and v['date_fields']:
+                    for k in v['date_fields']:
+                        val = getattr(model, k, '')
+                        if val:
+                            val = val.strftime('%Y-%m-%d')
+
+                        values_to_save[k] = val
+
+                if ('time_fields' in v) and v['time_fields']:
+                    for k in v['time_fields']:
+                        val = getattr(model, k, '')
+                        if val:
+                            val = val.strftime('%H:%M:%S')
+
+                        values_to_save[k] = val
 
                 session[model_name].append(values_to_save)
             else:

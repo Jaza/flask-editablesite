@@ -2,28 +2,34 @@
 """Public section, including homepage."""
 
 from datetime import datetime, date
-from operator import itemgetter
 import os
 
 from flask import current_app as app
 from flask import (Blueprint, request, render_template, flash, url_for,
-                    redirect, session, send_from_directory)
+                   redirect, session, send_from_directory)
 from flask_wtf import Form
 from flask_mail import Message
 from flask_login import (login_user, login_required, logout_user,
                          current_user)
+from sqlalchemy.exc import IntegrityError
 
 from flask_editablesite.extensions import db, login_manager, mail
 from flask_editablesite.user.models import User
-from flask_editablesite.contentblock.models import ShortTextContentBlock, RichTextContentBlock, ImageContentBlock
+from flask_editablesite.contentblock.models import (
+    ShortTextContentBlock, RichTextContentBlock, ImageContentBlock)
 from flask_editablesite.gallery.models import GalleryItem
 from flask_editablesite.event.models import Event
-from flask_editablesite.editable.forms import TextEditForm, TextOptionalEditForm, LongTextEditForm, ImageEditForm, ReorderForm, DateEditForm, DateOptionalEditForm, TimeOptionalEditForm
-from flask_editablesite.editable.sample_images import placeholder_or_random_sample_image
-from flask_editablesite.editable.sample_text import placeholder_or_random_sample_text
-from flask_editablesite.public.forms import LoginForm, ContactForm
+from flask_editablesite.editable.forms import (
+    TextEditForm, TextOptionalEditForm, LongTextEditForm,
+    ImageEditForm, ReorderForm, DateEditForm,
+    DateOptionalEditForm, TimeOptionalEditForm)
+from flask_editablesite.editable.sample_images import (
+    placeholder_or_random_sample_image,)
+from flask_editablesite.editable.sample_text import (
+    placeholder_or_random_sample_text,)
+from flask_editablesite.public.forms import (
+    LoginForm, ContactForm)
 from flask_editablesite.utils import flash_errors
-from flask_editablesite.database import db
 
 blueprint = Blueprint('public', __name__, static_folder="../static")
 
@@ -37,7 +43,8 @@ def load_user(id):
         except ValueError:
             return None
 
-    return (app.config.get('USE_SESSIONSTORE_NOT_DB')
+    return (
+        app.config.get('USE_SESSIONSTORE_NOT_DB')
         # Load the dummy user if set to 'sessionstore' instead of 'db'
         and User.sessionstore_user()
         # Otherwise load the actual logged-in user from the DB.
@@ -54,10 +61,10 @@ def home():
 
     # Short text blocks
     stc_blocks = {
-            o.slug: {
-                'title': o.title,
-                'content': o.content,
-                'model': o}
+        o.slug: {
+            'title': o.title,
+            'content': o.content,
+            'model': o}
         for o in ShortTextContentBlock.default_content().values()}
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
@@ -66,7 +73,8 @@ def home():
                 'title': o['title'],
                 'content': o['content']}
     else:
-        for o in (ShortTextContentBlock.query
+        for o in (
+            ShortTextContentBlock.query
                 .filter_by(active=True)
                 .all()):
             stc_blocks[o.slug] = {
@@ -84,10 +92,10 @@ def home():
 
     # Rich text blocks
     rtc_blocks = {
-            o.slug: {
-                'title': o.title,
-                'content': o.content,
-                'model': o}
+        o.slug: {
+            'title': o.title,
+            'content': o.content,
+            'model': o}
         for o in RichTextContentBlock.default_content().values()}
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
@@ -96,7 +104,8 @@ def home():
                 'title': o['title'],
                 'content': o['content']}
     else:
-        for o in (RichTextContentBlock.query
+        for o in (
+            RichTextContentBlock.query
                 .filter_by(active=True)
                 .all()):
             rtc_blocks[o.slug] = {
@@ -114,15 +123,15 @@ def home():
 
     # Image blocks
     ic_blocks = {
-            o.slug: {
-                'title': o.title,
-                'image': o.image_or_placeholder,
-                'model': o}
+        o.slug: {
+            'title': o.title,
+            'image': o.image_or_placeholder,
+            'model': o}
         for o in ImageContentBlock.default_content().values()}
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
         for slug, o in ic_blocks.items():
-            if session.get('image_content_block') == None:
+            if session.get('image_content_block') is None:
                 session['image_content_block'] = {}
 
             if session.get('image_content_block', {}).get(slug, None):
@@ -165,7 +174,8 @@ def home():
                     db.session.rollback()
                     raise e
 
-        for o in (ImageContentBlock.query
+        for o in (
+            ImageContentBlock.query
                 .filter_by(active=True)
                 .all()):
             ic_blocks[o.slug] = {
@@ -187,9 +197,10 @@ def home():
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
         gallery_count = len(session.get('gallery_item', []))
     else:
-        gallery_count = (GalleryItem.query
-            .filter_by(active=True)
-            .count())
+        gallery_count = (
+            GalleryItem.query
+                       .filter_by(active=True)
+                       .count())
 
     if not gallery_count:
         default_gallery_items = GalleryItem.default_content()
@@ -234,7 +245,7 @@ def home():
         (gallery_count > gallery_limit))
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        if session.get('gallery_item') == None:
+        if session.get('gallery_item') is None:
             session['gallery_item'] = ['']
 
         for id, o in enumerate(session.get('gallery_item', [])):
@@ -245,10 +256,11 @@ def home():
 
                 # If the placeholder image defined in session storage
                 # doesn't exist on the filesystem (e.g. if Heroku has
-                # wiped the filesystem due to app restart), set a new image
-                # for this model.
+                # wiped the filesystem due to app restart), set a new
+                # image for this model.
                 if not os.path.exists(filepath):
-                    session['gallery_item'][id]['image'] = placeholder_or_random_sample_image()
+                    session['gallery_item'][id]['image'] = (
+                        placeholder_or_random_sample_image())
 
         gallery_items = []
         for id, o in enumerate(session['gallery_item']):
@@ -258,16 +270,16 @@ def home():
                 model.weight = id-1
                 gallery_items.append(model)
     else:
-        gallery_items = (GalleryItem.query
-            .filter_by(active=True)
-            .order_by(GalleryItem.weight))
+        gallery_items = (
+            GalleryItem.query
+                       .filter_by(active=True)
+                       .order_by(GalleryItem.weight))
 
     if is_gallery_showlimited:
         if app.config.get('USE_SESSIONSTORE_NOT_DB'):
             gallery_items = gallery_items[:gallery_limit]
         else:
-            gallery_items = (gallery_items
-                .limit(gallery_limit))
+            gallery_items = gallery_items.limit(gallery_limit)
 
     if not app.config.get('USE_SESSIONSTORE_NOT_DB'):
         gallery_items = gallery_items.all()
@@ -290,11 +302,16 @@ def home():
 
     if current_user.is_authenticated():
         if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-            items = [{'identifier': i, 'weight': i-1} for i, v in enumerate(session['gallery_item']) if v]
+            items = [
+                {'identifier': i, 'weight': i-1}
+                for i, v in enumerate(session['gallery_item']) if v]
         else:
-            items = [{'identifier': gi.id, 'weight': gi.weight} for gi in (GalleryItem.query
-                .filter_by(active=True)
-                .order_by(GalleryItem.weight).all())]
+            items = [
+                {'identifier': gi.id, 'weight': gi.weight}
+                for gi in (
+                    GalleryItem.query
+                               .filter_by(active=True)
+                               .order_by(GalleryItem.weight).all())]
 
         gi_reorder_form = ReorderForm(items=items, prefix='gallery_')
 
@@ -302,26 +319,32 @@ def home():
     event_upcoming_limit = app.config['EVENT_UPCOMING_LIMIT']
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        event_upcoming_count = len([o for o in session.get('event', [])
-            if (o and (datetime.strptime(o['start_date'], '%Y-%m-%d').date()
+        event_upcoming_count = len([
+            o for o in session.get('event', [])
+            if (o and (
+                datetime.strptime(o['start_date'], '%Y-%m-%d').date()
                 >= date.today()))])
     else:
-        event_upcoming_count = (Event.query
-            .filter_by(active=True)
-            .filter(Event.start_date >= date.today())
-            .count())
+        event_upcoming_count = (
+            Event.query
+                 .filter_by(active=True)
+                 .filter(Event.start_date >= date.today())
+                 .count())
 
     event_past_limit = app.config['EVENT_PAST_LIMIT']
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        event_past_count = len([o for o in session.get('event', [])
-            if (o and (datetime.strptime(o['start_date'], '%Y-%m-%d').date()
+        event_past_count = len([
+            o for o in session.get('event', [])
+            if (o and (
+                datetime.strptime(o['start_date'], '%Y-%m-%d').date()
                 < date.today()))])
     else:
-        event_past_count = (Event.query
-            .filter_by(active=True)
-            .filter(Event.start_date < date.today())
-            .count())
+        event_past_count = (
+            Event.query
+                 .filter_by(active=True)
+                 .filter(Event.start_date < date.today())
+                 .count())
 
     if (not event_upcoming_count) and (not event_past_count):
         default_events = Event.default_content()
@@ -330,14 +353,23 @@ def home():
             session['event'] = ['']
 
             for o in default_events:
-                # If this model isn't currently saved to session storage,
-                # save it now.
+                # If this model isn't currently saved to session
+                # storage, save it now.
                 session['event'].append({
                     'title': o.title,
                     'start_date': o.start_date.strftime('%Y-%m-%d'),
-                    'end_date': (o.end_date and o.end_date.strftime('%Y-%m-%d') or ''),
-                    'start_time': (o.start_time and o.start_time.strftime('%H:%M:%S') or ''),
-                    'end_time': (o.end_time and o.end_time.strftime('%H:%M:%S') or ''),
+                    'end_date': (
+                        o.end_date
+                        and o.end_date.strftime('%Y-%m-%d')
+                        or ''),
+                    'start_time': (
+                        o.start_time
+                        and o.start_time.strftime('%H:%M:%S')
+                        or ''),
+                    'end_time': (
+                        o.end_time
+                        and o.end_time.strftime('%H:%M:%S')
+                        or ''),
                     'event_url': o.event_url,
                     'location_name': o.location_name,
                     'location_url': o.location_url})
@@ -351,13 +383,16 @@ def home():
                     db.session.rollback()
                     raise e
 
-        event_upcoming_count = len([o for o in default_events
+        event_upcoming_count = len([
+            o for o in default_events
             if o.start_date >= date.today()])
 
-        event_past_count = len([o for o in default_events
+        event_past_count = len([
+            o for o in default_events
             if o.start_date < date.today()])
 
-    is_events_showmore = request.args.get('events_showmore', None) == '1'
+    is_events_showmore = (
+        request.args.get('events_showmore', None) == '1')
 
     is_events_showlimited = (
         (not current_user.is_authenticated()) and
@@ -367,7 +402,7 @@ def home():
             (event_past_count > event_past_limit)))
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        if session.get('event') == None:
+        if session.get('event') is None:
             session['event'] = ['']
 
         events_upcoming = []
@@ -377,10 +412,31 @@ def home():
                 dt_now_str = datetime.now().strftime('%Y-%m-%d')
                 o_d = {
                     'title': o['title'],
-                    'start_date': datetime.strptime(o['start_date'], '%Y-%m-%d').date(),
-                    'end_date': (o['end_date'] and datetime.strptime(o['end_date'], '%Y-%m-%d').date() or None),
-                    'start_time': (o['start_time'] and datetime.strptime(dt_now_str + ' ' + o['start_time'], '%Y-%m-%d %H:%M:%S').time() or None),
-                    'end_time': (o['end_time'] and datetime.strptime(dt_now_str + ' ' + o['end_time'], '%Y-%m-%d %H:%M:%S').time() or None),
+                    'start_date': (
+                        datetime.strptime(o['start_date'], '%Y-%m-%d')
+                        .date()),
+                    'end_date': (
+                        o['end_date']
+                        and (
+                            datetime.strptime(
+                                o['end_date'], '%Y-%m-%d')
+                            .date())
+                        or None),
+                    'start_time': (
+                        o['start_time']
+                        and (
+                            datetime.strptime(
+                                dt_now_str + ' ' + o['start_time'],
+                                '%Y-%m-%d %H:%M:%S')
+                            .time())
+                        or None),
+                    'end_time': (
+                        o['end_time']
+                        and (
+                            datetime.strptime(
+                                dt_now_str + ' ' + o['end_time'],
+                                '%Y-%m-%d %H:%M:%S')
+                            .time()) or None),
                     'event_url': o['event_url'],
                     'location_name': o['location_name'],
                     'location_url': o['location_url']}
@@ -392,29 +448,34 @@ def home():
                 else:
                     events_past.append(model)
 
-        events_upcoming = sorted(events_upcoming, key=lambda o: o.start_date)
-        events_past = sorted(events_past, key=lambda o: o.start_date, reverse=True)
+        events_upcoming = sorted(
+            events_upcoming, key=lambda o: o.start_date)
+        events_past = sorted(
+            events_past, key=lambda o: o.start_date, reverse=True)
     else:
-        events_upcoming = (Event.query
-            .filter_by(active=True)
-            .filter(Event.start_date >= date.today())
-            .order_by(Event.start_date, Event.start_time))
+        events_upcoming = (
+            Event.query
+                 .filter_by(active=True)
+                 .filter(Event.start_date >= date.today())
+                 .order_by(Event.start_date, Event.start_time))
 
-        events_past = (Event.query
-            .filter_by(active=True)
-            .filter(Event.start_date < date.today())
-            .order_by(Event.start_date.desc(), Event.start_time.desc()))
+        events_past = (
+            Event.query
+                 .filter_by(active=True)
+                 .filter(Event.start_date < date.today())
+                 .order_by(Event.start_date.desc(),
+                           Event.start_time.desc()))
 
     if is_events_showlimited:
         if app.config.get('USE_SESSIONSTORE_NOT_DB'):
             events_upcoming = events_upcoming[:event_upcoming_limit]
             events_past = events_past[:event_past_limit]
         else:
-            events_upcoming = (events_upcoming
-                .limit(event_upcoming_limit))
+            events_upcoming = (
+                events_upcoming.limit(event_upcoming_limit))
 
-            events_past = (events_past
-                .limit(event_past_limit))
+            events_past = (
+                events_past.limit(event_past_limit))
 
     if not app.config.get('USE_SESSIONSTORE_NOT_DB'):
         events_upcoming = events_upcoming.all()
@@ -425,13 +486,20 @@ def home():
         for event in (events_upcoming + events_past):
             event_forms[event.id] = {
                 'title': TextEditForm(content=event.title),
-                'event_url': TextOptionalEditForm(content=event.event_url),
-                'start_date': DateEditForm(content=event.start_date),
-                'end_date': DateOptionalEditForm(content=event.end_date),
-                'start_time': TimeOptionalEditForm(content=event.start_time),
-                'end_time': TimeOptionalEditForm(content=event.end_time),
-                'location_name': TextOptionalEditForm(content=event.location_name),
-                'location_url': TextOptionalEditForm(content=event.location_url)}
+                'event_url': TextOptionalEditForm(
+                    content=event.event_url),
+                'start_date': DateEditForm(
+                    content=event.start_date),
+                'end_date': DateOptionalEditForm(
+                    content=event.end_date),
+                'start_time': TimeOptionalEditForm(
+                    content=event.start_time),
+                'end_time': TimeOptionalEditForm(
+                    content=event.end_time),
+                'location_name': TextOptionalEditForm(
+                    content=event.location_name),
+                'location_url': TextOptionalEditForm(
+                    content=event.location_url)}
 
             if current_user.is_authenticated():
                 event_forms[event.id]['delete'] = Form()
@@ -464,7 +532,8 @@ def contact():
     form = ContactForm(request.form)
 
     if form.validate_on_submit():
-        subject = "New message from {0} contact form".format(app.config['SITE_NAME'])
+        subject = "New message from {0} contact form".format(
+            app.config['SITE_NAME'])
 
         body = "\nFrom: {0} <{1}>\n".format(
             form.name.data,
@@ -474,11 +543,14 @@ def contact():
             body += "Phone: {0}\n".format(form.phone.data)
 
         body += "\n\n{0}\n\n-----\n\n".format(form.message.data)
-        body += "This is an auto-generated email from {0}.\n".format(app.config['SITE_NAME'])
+        body += "This is an auto-generated email from {0}.\n".format(
+            app.config['SITE_NAME'])
 
         log_msg = "Contact form submission\n"
-        log_msg += "Sent by: <{0}>\n".format(app.config['MAIL_DEFAULT_SENDER'])
-        log_msg += "Sent to: {0}\n".format(app.config['CONTACT_EMAIL_RECIPIENTS'])
+        log_msg += "Sent by: <{0}>\n".format(
+            app.config['MAIL_DEFAULT_SENDER'])
+        log_msg += "Sent to: {0}\n".format(
+            app.config['CONTACT_EMAIL_RECIPIENTS'])
         log_msg += "Subject: {0}\n".format(subject)
         log_msg += body
 

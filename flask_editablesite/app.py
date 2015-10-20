@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """The app module, containing the app factory function."""
-import os
 
 from flask import Flask, render_template
 
@@ -17,7 +16,8 @@ from flask_editablesite.extensions import (
     debug_toolbar,
     thumb,
 )
-from flask_editablesite import public, editable
+from flask_editablesite.public.views import blueprint as public_bp
+from flask_editablesite.editable.views import blueprint as editable_bp
 
 
 def create_app(config_object=ProdConfig):
@@ -53,8 +53,8 @@ def register_extensions(app):
 
 
 def register_blueprints(app):
-    app.register_blueprint(public.views.blueprint)
-    app.register_blueprint(editable.views.blueprint)
+    app.register_blueprint(public_bp)
+    app.register_blueprint(editable_bp)
     return None
 
 
@@ -62,7 +62,8 @@ def register_errorhandlers(app):
     def render_error(error):
         # If a HTTPException, pull the `code` attribute; default to 500
         error_code = getattr(error, 'code', 500)
-        return render_template("{0}.html".format(error_code)), error_code
+        return (render_template("{0}.html".format(error_code)),
+                error_code)
     for errcode in [401, 404, 500]:
         app.errorhandler(errcode)(render_error)
     return None
@@ -72,7 +73,9 @@ def register_loggers(app):
     import logging
     from logging.handlers import SMTPHandler
 
-    log_formatter = logging.Formatter('%(levelname)s %(asctime)s %(message)s', '[%Y-%m-%d %H:%M:%S]')
+    log_formatter = logging.Formatter(
+        '%(levelname)s %(asctime)s %(message)s',
+        '[%Y-%m-%d %H:%M:%S]')
 
     if len(app.logger.handlers):
         app.logger.handlers[0].setFormatter(log_formatter)

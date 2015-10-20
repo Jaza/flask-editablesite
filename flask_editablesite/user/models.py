@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime as dt
 
 from flask import current_app as app
 from flask_login import UserMixin
@@ -56,9 +55,13 @@ class User(UserMixin, SurrogatePK, TimeStamped, Confirmable, Model):
 
     @classmethod
     def sessionstore_user(cls):
-        """A dummy user object to represent the logged-in user when we're set to 'sessionstore' instead of 'db'."""
+        """
+        A dummy user object to represent the logged-in user when
+        we're set to 'sessionstore' instead of 'db'.
+        """
 
-        return cls(email=app.config['SESSIONSTORE_USER_EMAIL'],
+        return cls(
+            email=app.config['SESSIONSTORE_USER_EMAIL'],
             first_name=app.config['SESSIONSTORE_USER_FIRST_NAME'],
             last_name=app.config['SESSIONSTORE_USER_LAST_NAME'],
             active=True)

@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 import random
 import string
 
-from sqlalchemy import event, func
+from sqlalchemy import event
 from slugify import slugify
 
 from flask import current_app as app
@@ -43,7 +43,8 @@ class Event(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
 
     @classmethod
     def new_item(cls, title_prefix='New ', rand_start_date=False):
-        rand_str = ''.join(random.choice(string.ascii_lowercase) for _ in range(10))
+        rand_str = ''.join(
+            random.choice(string.ascii_lowercase) for _ in range(10))
         title = '{0}Event {1}'.format(title_prefix, rand_str)
         slug = slugify(title, to_lower=True)
 
@@ -53,7 +54,9 @@ class Event(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
 
         if rand_start_date:
             fiveyears_indays = 365 * 5
-            rand_delta = timedelta(days=random.randrange(-fiveyears_indays, fiveyears_indays))
+            rand_delta = timedelta(
+                days=random.randrange(
+                    -fiveyears_indays, fiveyears_indays))
             start_date += rand_delta
 
         start_time = None
@@ -76,7 +79,8 @@ class Event(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
             if bool(random.getrandbits(1)):
                 rand_delta = timedelta(minutes=(15 * random.randrange(96)))
                 dt_now = datetime.now()
-                dt_midnighttoday = datetime(dt_now.year, dt_now.month, dt_now.day)
+                dt_midnighttoday = datetime(
+                    dt_now.year, dt_now.month, dt_now.day)
                 end_time = (dt_midnighttoday + rand_delta).time()
 
         # Toss a coin to see if we set an event URL or not
@@ -88,12 +92,15 @@ class Event(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
         location_name = ''
         location_url = ''
         if bool(random.getrandbits(1)):
-            rand_str = ''.join(random.choice(string.ascii_lowercase) for _ in range(10))
+            rand_str = ''.join(
+                random.choice(string.ascii_lowercase)
+                for _ in range(10))
             location_name = 'Location {0}'.format(rand_str)
 
             # Toss a coin to see if we set a location URL or not
             if bool(random.getrandbits(1)):
-                location_url = random.choice(app.config['EDITABLE_SAMPLE_URLS'])
+                location_url = random.choice(
+                    app.config['EDITABLE_SAMPLE_URLS'])
 
         return cls(
             title=title,
@@ -109,7 +116,8 @@ class Event(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
 
     @classmethod
     def default_content(cls):
-        return [cls.new_item(title_prefix='Sample ', rand_start_date=True)
+        return [
+            cls.new_item(title_prefix='Sample ', rand_start_date=True)
             for i in range(app.config['EVENT_NUM_DEFAULT_ITEMS'])]
 
 

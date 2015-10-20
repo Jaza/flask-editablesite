@@ -7,6 +7,7 @@ from sqlalchemy import event, func
 from slugify import slugify
 
 from flask import current_app as app
+from flask import url_for
 
 from flask_editablesite.database import (
     Column,
@@ -23,7 +24,8 @@ from flask_editablesite.database import (
 )
 
 
-class GalleryItem(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
+class GalleryItem(SurrogatePK, Slugged, TimeStamped,
+                  Confirmable, Model):
     __tablename__ = 'gallery_item'
 
     image = Column(db.String(255), nullable=False, default='')
@@ -40,22 +42,30 @@ class GalleryItem(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
 
     @property
     def image_path(self):
-        return self.image and '%s%s' % (app.config['UPLOADS_RELATIVE_PATH'], self.image) or None
+        return (
+            self.image
+            and '%s%s' % (
+                app.config['UPLOADS_RELATIVE_PATH'], self.image)
+            or None)
 
     @property
     def image_url(self):
         if not self.image:
             return None
 
-        return url_for('static', filename=self.image_path, _external=True)
+        return url_for('static', filename=self.image_path,
+                       _external=True)
 
     @property
     def image_or_placeholder(self):
-        return self.image or app.config['EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH']
+        return (
+            self.image
+            or app.config['EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'])
 
     @classmethod
     def new_item(cls, title_prefix='New '):
-        rand_str = ''.join(random.choice(string.ascii_lowercase) for _ in range(10))
+        rand_str = ''.join(
+            random.choice(string.ascii_lowercase) for _ in range(10))
         title = '{0}Gallery Item {1}'.format(title_prefix, rand_str)
         slug = slugify(title, to_lower=True)
 
@@ -68,7 +78,8 @@ class GalleryItem(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
         return cls(
             title=title,
             slug=slug,
-            image=app.config['EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'],
+            image=app.config[
+                'EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'],
             date_taken=date_taken,
             content=app.config['EDITABLE_PLACEHOLDER_TEXT'],
             active=True)
@@ -88,24 +99,29 @@ class GalleryItem(SurrogatePK, Slugged, TimeStamped, Confirmable, Model):
     @classmethod
     def max_weight(cls):
         result = (cls.query
-            .with_entities(func.max(cls.weight).label('max_weight'))
-            .first())
+                     .with_entities(
+                         func.max(cls.weight).label('max_weight'))
+                     .first())
 
         if not (
                 result and
-                type(result).__name__ in ('KeyedTuple', 'result') and
+                (type(result).__name__ in ('KeyedTuple', 'result')) and
                 len(result) and
-                result[0] != None):
+                result[0] is not None):
             return None
 
         return int(result[0])
 
 
-event.listen(GalleryItem, 'before_insert', update_timestamps_before_insert)
-event.listen(GalleryItem, 'before_update', update_timestamps_before_update)
+event.listen(GalleryItem, 'before_insert',
+             update_timestamps_before_insert)
+event.listen(GalleryItem, 'before_update',
+             update_timestamps_before_update)
 
-event.listen(GalleryItem, 'before_insert', update_confirmedat_before_save)
-event.listen(GalleryItem, 'before_update', update_confirmedat_before_save)
+event.listen(GalleryItem, 'before_insert',
+             update_confirmedat_before_save)
+event.listen(GalleryItem, 'before_update',
+             update_confirmedat_before_save)
 
 event.listen(GalleryItem, 'before_insert', update_slug_before_save)
 event.listen(GalleryItem, 'before_update', update_slug_before_save)

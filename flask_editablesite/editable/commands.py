@@ -1,7 +1,6 @@
 import os
 from urlparse import urlparse
 
-from flask import current_app as app
 from flask_script import Command, Option, prompt
 
 from flask_editablesite.editable.sample_images import scrape_sample_images
@@ -21,12 +20,13 @@ class DownloadSampleImages(Command):
             Option('--parentelclass',
                    help='Parent element class (optional)'),
             Option('--onlyfirstel',
-                   help='Only get the first element of each parent (optional)',
+                   help=('Only get the first element of each parent '
+                         '(optional)'),
                    default=False),
         )
 
-    def download_sample_images(self, url, targetdir, parentelname, parentelclass, onlyfirstel):
-        from bs4 import BeautifulSoup
+    def download_sample_images(self, url, targetdir, parentelname,
+                               parentelclass, onlyfirstel):
         import requests
 
         from clint.textui import progress
@@ -59,7 +59,8 @@ class DownloadSampleImages(Command):
 
         return 'Downloaded %d images' % total_downloaded
 
-    def run(self, url=None, targetdir=None, parentelname=None, parentelclass=None, onlyfirstel=False):
+    def run(self, url=None, targetdir=None, parentelname=None,
+            parentelclass=None, onlyfirstel=False):
         if not url:
             url = prompt("URL of web site to scrape for images")
 

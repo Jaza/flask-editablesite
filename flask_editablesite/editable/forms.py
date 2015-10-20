@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from wtforms import TextField, TextAreaField, HiddenField, FieldList, FormField, DateField
+from wtforms import (TextField, TextAreaField, HiddenField, FieldList,
+                     FormField, DateField)
 from wtforms_components import TimeField
 from wtforms.validators import DataRequired
 
@@ -24,15 +25,25 @@ class LongTextOptionalEditForm(Form):
 
 
 class ImageEditForm(Form):
-    image = FileField('Image', validators=[DataRequired(), FileAllowed(('gif', 'jpg', 'jpeg', 'png'), 'Only image files (gif, jpg, png) can be uploaded for this field')])
+    image = FileField('Image', validators=[
+        DataRequired(),
+        FileAllowed(
+            ('gif', 'jpg', 'jpeg', 'png'),
+            ('Only image files (gif, jpg, png) can be uploaded '
+                'for this field'))])
 
 
 class ImageOptionalEditForm(Form):
-    image = FileField('Image', validators=[FileAllowed(('gif', 'jpg', 'jpeg', 'png'), 'Only image files (gif, jpg, png) can be uploaded for this field')])
+    image = FileField('Image', validators=[
+        FileAllowed(
+            ('gif', 'jpg', 'jpeg', 'png'),
+            ('Only image files (gif, jpg, png) can be uploaded for '
+                'this field'))])
 
 
 class DateEditForm(Form):
-    content = DateField('Date', format='%d %b %Y', validators=[DataRequired()])
+    content = DateField('Date', format='%d %b %Y', validators=[
+        DataRequired()])
 
 
 class DateOptionalEditForm(Form):

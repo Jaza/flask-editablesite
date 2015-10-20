@@ -47,6 +47,7 @@ class CRUDMixin(object):
         db.session.delete(self)
         return commit and db.session.commit()
 
+
 class Model(CRUDMixin, db.Model):
     """Base model class that includes CRUD convenience methods."""
     __abstract__ = True
@@ -111,13 +112,17 @@ class TimeStamped(object):
     def created_at_formatted(self):
         from flask_babel import format_datetime
 
-        return self.created_at and format_datetime(self.created_at, 'long') or None
+        return (self.created_at
+                and format_datetime(self.created_at, 'long')
+                or None)
 
     @property
     def updated_at_formatted(self):
         from flask_babel import format_datetime
 
-        return self.updated_at and format_datetime(self.updated_at, 'long') or None
+        return (self.updated_at
+                and format_datetime(self.updated_at, 'long')
+                or None)
 
 
 def update_timestamps_before_insert(mapper, connection, target):
@@ -138,7 +143,9 @@ class Confirmable(object):
     def confirmed_at_formatted(self):
         from flask_babel import format_datetime
 
-        return self.confirmed_at and format_datetime(self.confirmed_at, 'long') or None
+        return (self.confirmed_at
+                and format_datetime(self.confirmed_at, 'long')
+                or None)
 
 
 def update_confirmedat_before_save(mapper, connection, target):

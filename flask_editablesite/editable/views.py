@@ -13,17 +13,22 @@ from werkzeug import secure_filename
 from flask_wtf import Form
 
 from flask_editablesite.extensions import db
-from flask_editablesite.editable.forms import TextEditForm, LongTextEditForm, DateEditForm, TimeEditForm, ImageEditForm, ReorderForm
+from flask_editablesite.editable.forms import (
+    TextEditForm, LongTextEditForm, DateEditForm, TimeEditForm,
+    ImageEditForm, ReorderForm)
 from flask_editablesite.editable.utils import get_model_class
-from flask_editablesite.editable.sample_images import placeholder_or_random_sample_image
-from flask_editablesite.editable.sample_text import placeholder_or_random_sample_text
+from flask_editablesite.editable.sample_images import (
+    placeholder_or_random_sample_image,)
+from flask_editablesite.editable.sample_text import (
+    placeholder_or_random_sample_text,)
 from flask_editablesite.utils import flash_errors
 
 
 blueprint = Blueprint('editable', __name__, static_folder="../static")
 
 
-def text_update_func(model_name, field_name, model_identifier, is_autosave=False):
+def text_update_func(model_name, field_name, model_identifier,
+                     is_autosave=False):
     try:
         v = app.config['EDITABLE_MODELS'][model_name]
     except KeyError:
@@ -39,17 +44,26 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
     try:
         model_classpath = v['classpath']
     except KeyError:
-        raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
+        raise ValueError((
+            'No class path defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         identifier_field_name = v['identifier_field']
     except KeyError:
-        raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No identifier field defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         title_field_name = v['title_field']
     except KeyError:
-        raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No title field defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     model_class = get_model_class(model_classpath, model_name)
 
@@ -78,9 +92,10 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
         if model_dict:
             model = model_class(**model_dict)
     else:
-        model = (model_class.query
-            .filter_by(**filter_by_kwargs)
-            .first())
+        model = (
+            model_class.query
+                       .filter_by(**filter_by_kwargs)
+                       .first())
 
     if not model:
         try:
@@ -95,7 +110,7 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
 
         try:
             if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-                if session.get(model_name) == None:
+                if session.get(model_name) is None:
                     session[model_name] = {}
 
                 if not model_identifier_int:
@@ -104,24 +119,30 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
                         session[model_name][model_identifier] = {
                             title_field_name: getattr(model, title_field_name)}
 
-                session[model_name][(model_identifier_int or model_identifier)][field_name] = content
+                session[model_name][(
+                    model_identifier_int or model_identifier
+                )][field_name] = content
             else:
                 setattr(model, field_name, content)
                 model.save()
 
-            app.logger.info('{0} updated: {1}; user: {2}'.format(model_name.replace('_', ' ').capitalize(), model, current_user))
+            app.logger.info('{0} updated: {1}; user: {2}'.format(
+                model_name.replace('_', ' ').capitalize(),
+                model, current_user))
 
             if is_autosave:
                 return Response('OK')
             else:
-                flash("{0} has been updated.".format(getattr(model, title_field_name)), 'success')
-        except IntegrityError as e:
+                flash("{0} has been updated.".format(
+                    getattr(model, title_field_name)), 'success')
+        except IntegrityError:
             db.session.rollback()
 
             if is_autosave:
                 return Response('ERROR', 400)
             else:
-                flash("Error updating {0}.".format(getattr(model, title_field_name)), 'danger')
+                flash("Error updating {0}.".format(
+                    getattr(model, title_field_name)), 'danger')
     else:
         if is_autosave:
             return Response('ERROR', 400)
@@ -131,7 +152,9 @@ def text_update_func(model_name, field_name, model_identifier, is_autosave=False
     return redirect(url_for("public.home"))
 
 
-@blueprint.route("/text-update/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@blueprint.route(
+    "/text-update/<model_name>/<field_name>/<model_identifier>/",
+    methods=["POST"])
 @login_required
 def text_update(model_name, field_name, model_identifier):
     return text_update_func(
@@ -140,7 +163,9 @@ def text_update(model_name, field_name, model_identifier):
         model_identifier=model_identifier)
 
 
-@blueprint.route("/text-update-autosave/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@blueprint.route(
+    "/text-update-autosave/<model_name>/<field_name>/<model_identifier>/",
+    methods=["POST"])
 @login_required
 def text_update_autosave(model_name, field_name, model_identifier):
     return text_update_func(
@@ -150,7 +175,8 @@ def text_update_autosave(model_name, field_name, model_identifier):
         is_autosave=True)
 
 
-def date_update_func(model_name, field_name, model_identifier, is_autosave=False):
+def date_update_func(model_name, field_name, model_identifier,
+                     is_autosave=False):
     try:
         v = app.config['EDITABLE_MODELS'][model_name]
     except KeyError:
@@ -162,17 +188,26 @@ def date_update_func(model_name, field_name, model_identifier, is_autosave=False
     try:
         model_classpath = v['classpath']
     except KeyError:
-        raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
+        raise ValueError((
+            'No class path defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         identifier_field_name = v['identifier_field']
     except KeyError:
-        raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No identifier field defined in app '
+            'config\'s EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         title_field_name = v['title_field']
     except KeyError:
-        raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No title field defined in app '
+            'config\'s EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     model_class = get_model_class(model_classpath, model_name)
 
@@ -201,9 +236,10 @@ def date_update_func(model_name, field_name, model_identifier, is_autosave=False
         if model_dict:
             model = model_class(**model_dict)
     else:
-        model = (model_class.query
-            .filter_by(**filter_by_kwargs)
-            .first())
+        model = (
+            model_class.query
+                       .filter_by(**filter_by_kwargs)
+                       .first())
 
     if not model:
         try:
@@ -218,7 +254,7 @@ def date_update_func(model_name, field_name, model_identifier, is_autosave=False
 
         try:
             if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-                if session.get(model_name) == None:
+                if session.get(model_name) is None:
                     session[model_name] = {}
 
                 if not model_identifier_int:
@@ -227,24 +263,30 @@ def date_update_func(model_name, field_name, model_identifier, is_autosave=False
                         session[model_name][model_identifier] = {
                             title_field_name: getattr(model, title_field_name)}
 
-                session[model_name][(model_identifier_int or model_identifier)][field_name] = content.strftime('%Y-%m-%d')
+                session[model_name][(
+                    model_identifier_int or model_identifier
+                )][field_name] = content.strftime('%Y-%m-%d')
             else:
                 setattr(model, field_name, content)
                 model.save()
 
-            app.logger.info('{0} updated: {1}; user: {2}'.format(model_name.replace('_', ' ').capitalize(), model, current_user))
+            app.logger.info('{0} updated: {1}; user: {2}'.format(
+                model_name.replace('_', ' ').capitalize(),
+                model, current_user))
 
             if is_autosave:
                 return Response('OK')
             else:
-                flash("{0} has been updated.".format(getattr(model, title_field_name)), 'success')
-        except IntegrityError as e:
+                flash("{0} has been updated.".format(
+                    getattr(model, title_field_name)), 'success')
+        except IntegrityError:
             db.session.rollback()
 
             if is_autosave:
                 return Response('ERROR', 400)
             else:
-                flash("Error updating {0}.".format(getattr(model, title_field_name)), 'danger')
+                flash("Error updating {0}.".format(
+                    getattr(model, title_field_name)), 'danger')
     else:
         if is_autosave:
             return Response('ERROR', 400)
@@ -254,7 +296,9 @@ def date_update_func(model_name, field_name, model_identifier, is_autosave=False
     return redirect(url_for("public.home"))
 
 
-@blueprint.route("/date-update/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@blueprint.route(
+    "/date-update/<model_name>/<field_name>/<model_identifier>/",
+    methods=["POST"])
 @login_required
 def date_update(model_name, field_name, model_identifier):
     return date_update_func(
@@ -263,7 +307,9 @@ def date_update(model_name, field_name, model_identifier):
         model_identifier=model_identifier)
 
 
-@blueprint.route("/date-update-autosave/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@blueprint.route(
+    "/date-update-autosave/<model_name>/<field_name>/<model_identifier>/",
+    methods=["POST"])
 @login_required
 def date_update_autosave(model_name, field_name, model_identifier):
     return date_update_func(
@@ -273,7 +319,8 @@ def date_update_autosave(model_name, field_name, model_identifier):
         is_autosave=True)
 
 
-def time_update_func(model_name, field_name, model_identifier, is_autosave=False):
+def time_update_func(model_name, field_name, model_identifier,
+                     is_autosave=False):
     try:
         v = app.config['EDITABLE_MODELS'][model_name]
     except KeyError:
@@ -285,17 +332,26 @@ def time_update_func(model_name, field_name, model_identifier, is_autosave=False
     try:
         model_classpath = v['classpath']
     except KeyError:
-        raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
+        raise ValueError((
+            'No class path defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         identifier_field_name = v['identifier_field']
     except KeyError:
-        raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No identifier field defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         title_field_name = v['title_field']
     except KeyError:
-        raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No title field defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     model_class = get_model_class(model_classpath, model_name)
 
@@ -324,9 +380,10 @@ def time_update_func(model_name, field_name, model_identifier, is_autosave=False
         if model_dict:
             model = model_class(**model_dict)
     else:
-        model = (model_class.query
-            .filter_by(**filter_by_kwargs)
-            .first())
+        model = (
+            model_class.query
+                       .filter_by(**filter_by_kwargs)
+                       .first())
 
     if not model:
         try:
@@ -341,7 +398,7 @@ def time_update_func(model_name, field_name, model_identifier, is_autosave=False
 
         try:
             if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-                if session.get(model_name) == None:
+                if session.get(model_name) is None:
                     session[model_name] = {}
 
                 if not model_identifier_int:
@@ -350,24 +407,30 @@ def time_update_func(model_name, field_name, model_identifier, is_autosave=False
                         session[model_name][model_identifier] = {
                             title_field_name: getattr(model, title_field_name)}
 
-                session[model_name][(model_identifier_int or model_identifier)][field_name] = content.strftime('%H:%M:%S')
+                session[model_name][(
+                    model_identifier_int or model_identifier
+                )][field_name] = content.strftime('%H:%M:%S')
             else:
                 setattr(model, field_name, content)
                 model.save()
 
-            app.logger.info('{0} updated: {1}; user: {2}'.format(model_name.replace('_', ' ').capitalize(), model, current_user))
+            app.logger.info('{0} updated: {1}; user: {2}'.format(
+                model_name.replace('_', ' ').capitalize(),
+                model, current_user))
 
             if is_autosave:
                 return Response('OK')
             else:
-                flash("{0} has been updated.".format(getattr(model, title_field_name)), 'success')
-        except IntegrityError as e:
+                flash("{0} has been updated.".format(
+                    getattr(model, title_field_name)), 'success')
+        except IntegrityError:
             db.session.rollback()
 
             if is_autosave:
                 return Response('ERROR', 400)
             else:
-                flash("Error updating {0}.".format(getattr(model, title_field_name)), 'danger')
+                flash("Error updating {0}.".format(
+                    getattr(model, title_field_name)), 'danger')
     else:
         if is_autosave:
             return Response('ERROR', 400)
@@ -377,7 +440,9 @@ def time_update_func(model_name, field_name, model_identifier, is_autosave=False
     return redirect(url_for("public.home"))
 
 
-@blueprint.route("/time-update/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@blueprint.route(
+    "/time-update/<model_name>/<field_name>/<model_identifier>/",
+    methods=["POST"])
 @login_required
 def time_update(model_name, field_name, model_identifier):
     return time_update_func(
@@ -386,7 +451,9 @@ def time_update(model_name, field_name, model_identifier):
         model_identifier=model_identifier)
 
 
-@blueprint.route("/time-update-autosave/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@blueprint.route(
+    "/time-update-autosave/<model_name>/<field_name>/<model_identifier>/",
+    methods=["POST"])
 @login_required
 def time_update_autosave(model_name, field_name, model_identifier):
     return time_update_func(
@@ -396,7 +463,8 @@ def time_update_autosave(model_name, field_name, model_identifier):
         is_autosave=True)
 
 
-def image_update_func(model_name, field_name, model_identifier, is_dropzone=False):
+def image_update_func(model_name, field_name, model_identifier,
+                      is_dropzone=False):
     try:
         v = app.config['EDITABLE_MODELS'][model_name]
     except KeyError:
@@ -408,22 +476,34 @@ def image_update_func(model_name, field_name, model_identifier, is_dropzone=Fals
     try:
         model_classpath = v['classpath']
     except KeyError:
-        raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
+        raise ValueError((
+            'No class path defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         identifier_field_name = v['identifier_field']
     except KeyError:
-        raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No identifier field defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         title_field_name = v['title_field']
     except KeyError:
-        raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No title field defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         image_relative_path = v['image_relative_path']
     except KeyError:
-        raise ValueError('No image relative path defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No image relative path defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     model_class = get_model_class(model_classpath, model_name)
 
@@ -452,9 +532,10 @@ def image_update_func(model_name, field_name, model_identifier, is_dropzone=Fals
         if model_dict:
             model = model_class(**model_dict)
     else:
-        model = (model_class.query
-            .filter_by(**filter_by_kwargs)
-            .first())
+        model = (
+            model_class.query
+                       .filter_by(**filter_by_kwargs)
+                       .first())
 
     if not model:
         try:
@@ -480,7 +561,11 @@ def image_update_func(model_name, field_name, model_identifier, is_dropzone=Fals
             filename = '%s%s/%s' % (
                 image_relative_path,
                 getattr(model, identifier_field_name),
-                secure_filename('%s-%s%s' % (parts[0], datetime.utcnow().strftime('%Y-%m-%d-%H-%M-%S'), parts[1])))
+                secure_filename(
+                    '{0}-{1}{2}'.format(
+                        parts[0],
+                        datetime.utcnow().strftime('%Y-%m-%d-%H-%M-%S'),
+                        parts[1])))
 
             filepath = os.path.abspath(
                 os.path.join(
@@ -496,7 +581,7 @@ def image_update_func(model_name, field_name, model_identifier, is_dropzone=Fals
 
         try:
             if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-                if session.get(model_name) == None:
+                if session.get(model_name) is None:
                     session[model_name] = {}
 
                 if not model_identifier_int:
@@ -505,16 +590,21 @@ def image_update_func(model_name, field_name, model_identifier, is_dropzone=Fals
                         session[model_name][model_identifier] = {
                             title_field_name: getattr(model, title_field_name)}
 
-                session[model_name][(model_identifier_int or model_identifier)][field_name] = image
+                session[model_name][(
+                    model_identifier_int or model_identifier
+                )][field_name] = image
             else:
                 setattr(model, field_name, image)
                 model.save()
 
-                if (image_orig and
-                        (image_orig != app.config['EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'])):
+                if (
+                    image_orig
+                    and (image_orig != app.config[
+                        'EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'])):
                     filepath = os.path.abspath(
-                        os.path.join(app.config['MEDIA_FOLDER'],
-                        image_orig))
+                        os.path.join(
+                            app.config['MEDIA_FOLDER'],
+                            image_orig))
 
                     if os.path.exists(filepath):
                         os.remove(filepath)
@@ -530,19 +620,23 @@ def image_update_func(model_name, field_name, model_identifier, is_dropzone=Fals
                         if os.path.exists(fp):
                             os.remove(fp)
 
-            app.logger.info('{0} updated: {1}; user: {2}'.format(model_name.replace('_', ' ').capitalize(), model, current_user))
+            app.logger.info('{0} updated: {1}; user: {2}'.format(
+                model_name.replace('_', ' ').capitalize(),
+                model, current_user))
 
             if is_dropzone:
                 return Response('OK')
             else:
-                flash("{0} has been updated.".format(getattr(model, title_field_name)), 'success')
-        except IntegrityError as e:
+                flash("{0} has been updated.".format(
+                    getattr(model, title_field_name)), 'success')
+        except IntegrityError:
             db.session.rollback()
 
             if is_dropzone:
                 return Response('ERROR')
             else:
-                flash("Error updating {0}.".format(getattr(model, title_field_name)), 'danger')
+                flash("Error updating {0}.".format(
+                    getattr(model, title_field_name)), 'danger')
     else:
         if is_dropzone:
             return Response('ERROR')
@@ -552,7 +646,9 @@ def image_update_func(model_name, field_name, model_identifier, is_dropzone=Fals
     return redirect(url_for("public.home"))
 
 
-@blueprint.route("/image-update/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@blueprint.route(
+    "/image-update/<model_name>/<field_name>/<model_identifier>/",
+    methods=["POST"])
 @login_required
 def image_update(model_name, field_name, model_identifier):
     return image_update_func(
@@ -561,7 +657,9 @@ def image_update(model_name, field_name, model_identifier):
         model_identifier=model_identifier)
 
 
-@blueprint.route("/image-update-dropzone/<model_name>/<field_name>/<model_identifier>/", methods=["POST"])
+@blueprint.route(
+    "/image-update-dropzone/<model_name>/<field_name>/<model_identifier>/",
+    methods=["POST"])
 @login_required
 def image_update_dropzone(model_name, field_name, model_identifier):
     return image_update_func(
@@ -583,17 +681,18 @@ def add_func(model_name, is_autosave=False):
     try:
         model_classpath = v['classpath']
     except KeyError:
-        raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
+        raise ValueError((
+            'No class path defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         title_field_name = v['title_field']
     except KeyError:
-        raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
-
-    try:
-        identifier_field_name = v['identifier_field']
-    except KeyError:
-        raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No title field defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         weight_field_name = v['weight_field']
@@ -616,9 +715,14 @@ def add_func(model_name, is_autosave=False):
             for k in v['long_text_fields']:
                 setattr(model, k, placeholder_or_random_sample_text())
 
-        if (not app.config.get('USE_SESSIONSTORE_NOT_DB')) and weight_field_name:
+        if (
+            (
+                (not app.config.get('USE_SESSIONSTORE_NOT_DB'))
+                and weight_field_name)):
             max_weight = model_class.max_weight()
-            setattr(model, weight_field_name, (max_weight != None and (max_weight+1) or 0))
+            setattr(
+                model, weight_field_name,
+                (max_weight is not None and (max_weight+1) or 0))
 
         try:
             if app.config.get('USE_SESSIONSTORE_NOT_DB'):
@@ -654,21 +758,29 @@ def add_func(model_name, is_autosave=False):
             else:
                 model.save()
 
-            app.logger.info('{0} added: {1}; user: {2}'.format(model_name_friendly, model, current_user))
+            app.logger.info('{0} added: {1}; user: {2}'.format(
+                model_name_friendly, model, current_user))
 
             if is_autosave:
                 return Response('OK')
             else:
-                flash('"{0}" has been added.'.format(getattr(model, title_field_name)), 'success')
+                flash('"{0}" has been added.'.format(
+                    getattr(model, title_field_name)), 'success')
         except IntegrityError as e:
             db.session.rollback()
 
             if is_autosave:
                 return Response('ERROR')
             else:
-                msg = (('violates unique constraint' in e.message)
-                    and 'Error: a {0} with title "{1}" already exists.'.format(model_name_friendly, getattr(model, title_field_name))
-                    or "Error adding {0}.".format(getattr(model, title_field_name)))
+                msg = (
+                    ('violates unique constraint' in e.message)
+                    and ((
+                        'Error: a {0} with title "{1}" '
+                        'already exists.').format(
+                            model_name_friendly,
+                            getattr(model, title_field_name)))
+                    or "Error adding {0}.".format(
+                        getattr(model, title_field_name)))
                 flash(msg, 'danger')
     else:
         if is_autosave:
@@ -708,17 +820,23 @@ def delete_func(model_name, model_identifier, is_bootbox=False):
     try:
         model_classpath = v['classpath']
     except KeyError:
-        raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
+        raise ValueError((
+            'No class path defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(model_name))
 
     try:
         identifier_field_name = v['identifier_field']
     except KeyError:
-        raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No identifier field defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(model_name))
 
     try:
         title_field_name = v['title_field']
     except KeyError:
-        raise ValueError('No title field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No title field defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(model_name))
 
     model_class = get_model_class(model_classpath, model_name)
 
@@ -728,7 +846,8 @@ def delete_func(model_name, model_identifier, is_bootbox=False):
     model = None
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        model_dict = ((session.get(model_name, [])
+        model_dict = ((
+            session.get(model_name, [])
             and len(session[model_name]) >= (model_identifier_int+1))
             and session[model_name][model_identifier_int]
             or None)
@@ -736,9 +855,10 @@ def delete_func(model_name, model_identifier, is_bootbox=False):
         if model_dict:
             model = model_class(**model_dict)
     else:
-        model = (model_class.query
-            .filter_by(**filter_by_kwargs)
-            .first())
+        model = (
+            model_class.query
+                       .filter_by(**filter_by_kwargs)
+                       .first())
 
     if not model:
         abort(404)
@@ -755,13 +875,16 @@ def delete_func(model_name, model_identifier, is_bootbox=False):
             else:
                 model.delete()
 
-            app.logger.info('{0} deleted: {1}; user: {2}'.format(model_name_friendly, title, current_user))
+            app.logger.info('{0} deleted: {1}; user: {2}'.format(
+                model_name_friendly, title, current_user))
 
             if is_bootbox:
                 return Response('OK')
             else:
-                flash("{0} has been deleted.".format(title), 'success')
-        except IntegrityError as e:
+                flash(
+                    "{0} has been deleted.".format(title),
+                    'success')
+        except IntegrityError:
             db.session.rollback()
 
             if is_bootbox:
@@ -777,13 +900,17 @@ def delete_func(model_name, model_identifier, is_bootbox=False):
     return redirect(url_for("public.home"))
 
 
-@blueprint.route("/delete/<model_name>/<model_identifier>/", methods=["POST"])
+@blueprint.route(
+    "/delete/<model_name>/<model_identifier>/",
+    methods=["POST"])
 @login_required
 def delete(model_name, model_identifier):
     return delete_func(model_name, model_identifier)
 
 
-@blueprint.route("/delete-bootbox/<model_name>/<model_identifier>/", methods=["POST"])
+@blueprint.route(
+    "/delete-bootbox/<model_name>/<model_identifier>/",
+    methods=["POST"])
 @login_required
 def delete_bootbox(model_name, model_identifier):
     return delete_func(model_name, model_identifier, is_bootbox=True)
@@ -801,17 +928,24 @@ def reorder_func(model_name, is_js=False):
     try:
         model_classpath = v['classpath']
     except KeyError:
-        raise ValueError('No class path defined in app config\'s EDITABLE_MODELS for model name "%s"' % model_name)
+        raise ValueError((
+            'No class path defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(model_name))
 
     try:
         identifier_field_name = v['identifier_field']
     except KeyError:
-        raise ValueError('No identifier field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No identifier field defined in app '
+            'config\'s EDITABLE_MODELS for model name "{0}"').format(
+                model_name))
 
     try:
         weight_field_name = v['weight_field']
     except KeyError:
-        raise ValueError('No weight field defined in app config\'s EDITABLE_MODELS for model name "%s"' %  model_name)
+        raise ValueError((
+            'No weight field defined in app config\'s '
+            'EDITABLE_MODELS for model name "{0}"').format(model_name))
 
     model_class = get_model_class(model_classpath, model_name)
 
@@ -819,11 +953,13 @@ def reorder_func(model_name, is_js=False):
     reorder_form_prefix = v.get('reorder_form_prefix', '')
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        items = [i for i, v in enumerate(session[model_name]) if v]
+        items = [o for i, o in enumerate(session[model_name]) if o]
     else:
-        items = [getattr(o, identifier_field_name) for o in (model_class.query
-            .filter_by(active=True)
-            .order_by(weight_field).all())]
+        items = [
+            getattr(o, identifier_field_name) for o in (
+                model_class.query
+                           .filter_by(active=True)
+                           .order_by(weight_field).all())]
 
     form = ReorderForm(items=items, prefix=reorder_form_prefix)
     item_weights = None
@@ -832,43 +968,53 @@ def reorder_func(model_name, is_js=False):
         model_name_friendly = model_name.replace('_', ' ').title()
 
         if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-            item_weights = [{'value': v, 'weight': (i-1)} for i, v in enumerate(session[model_name])]
+            item_weights = [
+                {'value': o, 'weight': (i-1)}
+                for i, o in enumerate(session[model_name])]
 
             for item_form in form.items:
-                item_weights[int(item_form.identifier.data)]['weight'] = int(item_form.weight.data)
+                item_weights[int(
+                    item_form.identifier.data
+                )]['weight'] = int(item_form.weight.data)
 
-            item_weights = sorted(item_weights, key=itemgetter('weight'))
+            item_weights = sorted(
+                item_weights, key=itemgetter('weight'))
         else:
             for item_form in form.items:
                 filter_by_kwargs = {
                     identifier_field_name: item_form.identifier.data,
                     'active': True}
 
-                item = (model_class.query
-                    .filter_by(**filter_by_kwargs)
-                    .first())
+                item = (
+                    model_class.query
+                               .filter_by(**filter_by_kwargs)
+                               .first())
                 item.weight = item_form.weight.data
                 db.session.add(item)
 
         try:
             if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-                session[model_name] = [v['value'] for v in item_weights]
+                session[model_name] = [
+                    o['value'] for o in item_weights]
             else:
                 db.session.commit()
 
-            app.logger.info('{0}s re-ordered: user: {1}'.format(model_name_friendly, current_user))
+            app.logger.info('{0}s re-ordered: user: {1}'.format(
+                model_name_friendly, current_user))
 
             if is_js:
                 return Response('OK')
             else:
-                flash("{0}s have been re-ordered.".format(model_name_friendly), 'success')
-        except IntegrityError as e:
+                flash("{0}s have been re-ordered.".format(
+                    model_name_friendly), 'success')
+        except IntegrityError:
             db.session.rollback()
 
             if is_js:
                 return Response('ERROR')
             else:
-                flash("Error re-ordering {0}.".format(model_name_friendly), 'danger')
+                flash("Error re-ordering {0}.".format(
+                    model_name_friendly), 'danger')
     else:
         if is_js:
             return Response('ERROR')

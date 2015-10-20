@@ -20,7 +20,8 @@ class CreateUser(Command):
     def create_user(self, email, first_name, last_name, password):
         from flask_editablesite.user.models import User
 
-        u = User(email=email, first_name=first_name, last_name=last_name, active=True)
+        u = User(email=email, first_name=first_name,
+                 last_name=last_name, active=True)
         u.set_password(password)
         u.save()
 
@@ -39,12 +40,13 @@ class CreateUser(Command):
         if not password:
             password = prompt_pass("Password")
 
-        user = ((not app.config.get('USE_SESSIONSTORE_NOT_DB'))
+        user = (
+            (not app.config.get('USE_SESSIONSTORE_NOT_DB'))
             and self.create_user(
-                    email=email,
-                    first_name=first_name,
-                    last_name=last_name,
-                    password=password)
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                password=password)
             or None)
 
         if not user:

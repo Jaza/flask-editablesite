@@ -27,6 +27,81 @@ from flask_editablesite.utils import flash_errors
 blueprint = Blueprint('editable', __name__, static_folder="../static")
 
 
+def delete_image_orig(image_orig):
+    """Deletes the specified old image."""
+
+    filepath = os.path.abspath(
+        os.path.join(
+            app.config['MEDIA_FOLDER'],
+            image_orig))
+
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
+    glob_filepath_split = os.path.splitext(
+        os.path.join(
+            app.config['MEDIA_THUMBNAIL_FOLDER'],
+            image_orig))
+    glob_filepath = glob_filepath_split[0]
+    glob_matches = glob('%s*' % glob_filepath)
+
+    for fp in glob_matches:
+        if os.path.exists(fp):
+            os.remove(fp)
+
+
+def update_submit_handler(model_name, model_identifier,
+                          model_identifier_int, title_field_name,
+                          content, model, field_name,
+                          is_autosave=False, image_orig=None):
+    """Generic submit handler for the update functions."""
+
+    try:
+        if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+            if session.get(model_name) is None:
+                session[model_name] = {}
+
+            if not model_identifier_int:
+                if not (session.get(model_name, {})
+                        .get(model_identifier, None)):
+                    session[model_name][model_identifier] = {
+                        title_field_name: getattr(
+                            model, title_field_name)}
+
+            session[model_name][(
+                model_identifier_int or model_identifier
+            )][field_name] = content
+        else:
+            setattr(model, field_name, content)
+            model.save()
+
+            if (
+                image_orig
+                and (image_orig != app.config[
+                    'EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'])):
+                delete_image_orig(image_orig)
+
+        app.logger.info('{0} updated: {1}; user: {2}'.format(
+            model_name.replace('_', ' ').capitalize(),
+            model, current_user))
+
+        if is_autosave:
+            return Response('OK')
+        else:
+            flash("{0} has been updated.".format(
+                getattr(model, title_field_name)), 'success')
+            return None
+    except IntegrityError:
+        db.session.rollback()
+
+        if is_autosave:
+            return Response('ERROR', 400)
+        else:
+            flash("Error updating {0}.".format(
+                getattr(model, title_field_name)), 'danger')
+            return None
+
+
 def text_update_func(model_name, field_name, model_identifier,
                      is_autosave=False):
     try:
@@ -108,41 +183,18 @@ def text_update_func(model_name, field_name, model_identifier,
     if form.validate_on_submit():
         content = form.content.data
 
-        try:
-            if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-                if session.get(model_name) is None:
-                    session[model_name] = {}
+        ret = update_submit_handler(
+            model_name=model_name,
+            model_identifier=model_identifier,
+            model_identifier_int=model_identifier_int,
+            title_field_name=title_field_name,
+            content=content,
+            model=model,
+            field_name=field_name,
+            is_autosave=is_autosave)
 
-                if not model_identifier_int:
-                    if not (session.get(model_name, {})
-                            .get(model_identifier, None)):
-                        session[model_name][model_identifier] = {
-                            title_field_name: getattr(model, title_field_name)}
-
-                session[model_name][(
-                    model_identifier_int or model_identifier
-                )][field_name] = content
-            else:
-                setattr(model, field_name, content)
-                model.save()
-
-            app.logger.info('{0} updated: {1}; user: {2}'.format(
-                model_name.replace('_', ' ').capitalize(),
-                model, current_user))
-
-            if is_autosave:
-                return Response('OK')
-            else:
-                flash("{0} has been updated.".format(
-                    getattr(model, title_field_name)), 'success')
-        except IntegrityError:
-            db.session.rollback()
-
-            if is_autosave:
-                return Response('ERROR', 400)
-            else:
-                flash("Error updating {0}.".format(
-                    getattr(model, title_field_name)), 'danger')
+        if ret:
+            return ret
     else:
         if is_autosave:
             return Response('ERROR', 400)
@@ -251,42 +303,21 @@ def date_update_func(model_name, field_name, model_identifier,
 
     if form.validate_on_submit():
         content = form.content.data
+        if content and app.config.get('USE_SESSIONSTORE_NOT_DB'):
+            content = content.strftime('%Y-%m-%d')
 
-        try:
-            if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-                if session.get(model_name) is None:
-                    session[model_name] = {}
+        ret = update_submit_handler(
+            model_name=model_name,
+            model_identifier=model_identifier,
+            model_identifier_int=model_identifier_int,
+            title_field_name=title_field_name,
+            content=content,
+            model=model,
+            field_name=field_name,
+            is_autosave=is_autosave)
 
-                if not model_identifier_int:
-                    if not (session.get(model_name, {})
-                            .get(model_identifier, None)):
-                        session[model_name][model_identifier] = {
-                            title_field_name: getattr(model, title_field_name)}
-
-                session[model_name][(
-                    model_identifier_int or model_identifier
-                )][field_name] = content.strftime('%Y-%m-%d')
-            else:
-                setattr(model, field_name, content)
-                model.save()
-
-            app.logger.info('{0} updated: {1}; user: {2}'.format(
-                model_name.replace('_', ' ').capitalize(),
-                model, current_user))
-
-            if is_autosave:
-                return Response('OK')
-            else:
-                flash("{0} has been updated.".format(
-                    getattr(model, title_field_name)), 'success')
-        except IntegrityError:
-            db.session.rollback()
-
-            if is_autosave:
-                return Response('ERROR', 400)
-            else:
-                flash("Error updating {0}.".format(
-                    getattr(model, title_field_name)), 'danger')
+        if ret:
+            return ret
     else:
         if is_autosave:
             return Response('ERROR', 400)
@@ -395,42 +426,21 @@ def time_update_func(model_name, field_name, model_identifier,
 
     if form.validate_on_submit():
         content = form.content.data
+        if content and app.config.get('USE_SESSIONSTORE_NOT_DB'):
+            content = content.strftime('%H:%M:%S')
 
-        try:
-            if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-                if session.get(model_name) is None:
-                    session[model_name] = {}
+        ret = update_submit_handler(
+            model_name=model_name,
+            model_identifier=model_identifier,
+            model_identifier_int=model_identifier_int,
+            title_field_name=title_field_name,
+            content=content,
+            model=model,
+            field_name=field_name,
+            is_autosave=is_autosave)
 
-                if not model_identifier_int:
-                    if not (session.get(model_name, {})
-                            .get(model_identifier, None)):
-                        session[model_name][model_identifier] = {
-                            title_field_name: getattr(model, title_field_name)}
-
-                session[model_name][(
-                    model_identifier_int or model_identifier
-                )][field_name] = content.strftime('%H:%M:%S')
-            else:
-                setattr(model, field_name, content)
-                model.save()
-
-            app.logger.info('{0} updated: {1}; user: {2}'.format(
-                model_name.replace('_', ' ').capitalize(),
-                model, current_user))
-
-            if is_autosave:
-                return Response('OK')
-            else:
-                flash("{0} has been updated.".format(
-                    getattr(model, title_field_name)), 'success')
-        except IntegrityError:
-            db.session.rollback()
-
-            if is_autosave:
-                return Response('ERROR', 400)
-            else:
-                flash("Error updating {0}.".format(
-                    getattr(model, title_field_name)), 'danger')
+        if ret:
+            return ret
     else:
         if is_autosave:
             return Response('ERROR', 400)
@@ -550,6 +560,8 @@ def image_update_func(model_name, field_name, model_identifier,
     form = ImageEditForm()
 
     if form.validate_on_submit():
+        image_orig = None
+
         if app.config.get('USE_SESSIONSTORE_NOT_DB'):
             image = placeholder_or_random_sample_image()
         else:
@@ -579,64 +591,19 @@ def image_update_func(model_name, field_name, model_identifier,
 
             image = filename
 
-        try:
-            if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-                if session.get(model_name) is None:
-                    session[model_name] = {}
+        ret = update_submit_handler(
+            model_name=model_name,
+            model_identifier=model_identifier,
+            model_identifier_int=model_identifier_int,
+            title_field_name=title_field_name,
+            content=image,
+            model=model,
+            field_name=field_name,
+            is_autosave=is_dropzone,
+            image_orig=image_orig)
 
-                if not model_identifier_int:
-                    if not (session.get(model_name, {})
-                            .get(model_identifier, None)):
-                        session[model_name][model_identifier] = {
-                            title_field_name: getattr(model, title_field_name)}
-
-                session[model_name][(
-                    model_identifier_int or model_identifier
-                )][field_name] = image
-            else:
-                setattr(model, field_name, image)
-                model.save()
-
-                if (
-                    image_orig
-                    and (image_orig != app.config[
-                        'EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'])):
-                    filepath = os.path.abspath(
-                        os.path.join(
-                            app.config['MEDIA_FOLDER'],
-                            image_orig))
-
-                    if os.path.exists(filepath):
-                        os.remove(filepath)
-
-                    glob_filepath_split = os.path.splitext(
-                        os.path.join(
-                            app.config['MEDIA_THUMBNAIL_FOLDER'],
-                            image_orig))
-                    glob_filepath = glob_filepath_split[0]
-                    glob_matches = glob('%s*' % glob_filepath)
-
-                    for fp in glob_matches:
-                        if os.path.exists(fp):
-                            os.remove(fp)
-
-            app.logger.info('{0} updated: {1}; user: {2}'.format(
-                model_name.replace('_', ' ').capitalize(),
-                model, current_user))
-
-            if is_dropzone:
-                return Response('OK')
-            else:
-                flash("{0} has been updated.".format(
-                    getattr(model, title_field_name)), 'success')
-        except IntegrityError:
-            db.session.rollback()
-
-            if is_dropzone:
-                return Response('ERROR')
-            else:
-                flash("Error updating {0}.".format(
-                    getattr(model, title_field_name)), 'danger')
+        if ret:
+            return ret
     else:
         if is_dropzone:
             return Response('ERROR')

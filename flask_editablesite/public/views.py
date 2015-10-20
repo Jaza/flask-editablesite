@@ -51,15 +51,9 @@ def load_user(id):
         or User.get_by_id(int_id))
 
 
-@blueprint.route("/")
-def home():
-    if current_user.is_authenticated() and (not current_user.active):
-        logout_user()
+def get_stc_blocks():
+    """Gets short text blocks."""
 
-    login_form = (not current_user.is_authenticated()) and LoginForm() or None
-    contact_form = ContactForm()
-
-    # Short text blocks
     stc_blocks = {
         o.slug: {
             'title': o.title,
@@ -90,7 +84,12 @@ def home():
 
             stc_blocks[k]['form'] = form
 
-    # Rich text blocks
+    return stc_blocks
+
+
+def get_rtc_blocks():
+    """Gets rich text blocks."""
+
     rtc_blocks = {
         o.slug: {
             'title': o.title,
@@ -121,7 +120,76 @@ def home():
 
             rtc_blocks[k]['form'] = form
 
-    # Image blocks
+    return rtc_blocks
+
+
+def get_sessionstore_ic_blocks(ic_blocks):
+    """Gets image blocks from the session store."""
+
+    for slug, o in ic_blocks.items():
+        if session.get('image_content_block') is None:
+            session['image_content_block'] = {}
+
+        if session.get('image_content_block', {}).get(slug, None):
+            filepath = os.path.join(
+                app.config['MEDIA_FOLDER'],
+                session['image_content_block'][slug]['image'])
+
+            # If the placeholder image defined in session storage
+            # doesn't exist on the filesystem (e.g. if Heroku has
+            # wiped the filesystem due to app restart), clear this
+            # model's session storage.
+            if not os.path.exists(filepath):
+                del session['image_content_block'][slug]
+
+        if not (session.get('image_content_block', {})
+                .get(slug, None)):
+            # If this model isn't currently saved to session storage,
+            # set its image now (could be a random sample) and save.
+            session['image_content_block'][slug] = {
+                'title': o['title'],
+                'image': placeholder_or_random_sample_image()}
+
+    for slug, o in session.get('image_content_block', {}).items():
+        ic_blocks[slug] = {
+            'title': o['title'],
+            'image': o['image']}
+
+    return ic_blocks
+
+
+def get_db_ic_blocks(ic_blocks):
+    """Gets image blocks from the database."""
+
+    for slug, o in ic_blocks.items():
+        if not(ImageContentBlock.query
+                .filter_by(slug=slug)
+                .first()):
+            # If this model isn't currently saved to the DB,
+            # set its image now (could be a random sample) and save.
+            model = o['model']
+            model.image = placeholder_or_random_sample_image()
+
+            try:
+                model.save()
+            except IntegrityError as e:
+                db.session.rollback()
+                raise e
+
+    for o in (
+        ImageContentBlock.query
+            .filter_by(active=True)
+            .all()):
+        ic_blocks[o.slug] = {
+            'title': o.title,
+            'image': o.image}
+
+    return ic_blocks
+
+
+def get_ic_blocks():
+    """Gets image blocks."""
+
     ic_blocks = {
         o.slug: {
             'title': o.title,
@@ -130,57 +198,9 @@ def home():
         for o in ImageContentBlock.default_content().values()}
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        for slug, o in ic_blocks.items():
-            if session.get('image_content_block') is None:
-                session['image_content_block'] = {}
-
-            if session.get('image_content_block', {}).get(slug, None):
-                filepath = os.path.join(
-                    app.config['MEDIA_FOLDER'],
-                    session['image_content_block'][slug]['image'])
-
-                # If the placeholder image defined in session storage
-                # doesn't exist on the filesystem (e.g. if Heroku has
-                # wiped the filesystem due to app restart), clear this
-                # model's session storage.
-                if not os.path.exists(filepath):
-                    del session['image_content_block'][slug]
-
-            if not (session.get('image_content_block', {})
-                    .get(slug, None)):
-                # If this model isn't currently saved to session storage,
-                # set its image now (could be a random sample) and save.
-                session['image_content_block'][slug] = {
-                    'title': o['title'],
-                    'image': placeholder_or_random_sample_image()}
-
-        for slug, o in session.get('image_content_block', {}).items():
-            ic_blocks[slug] = {
-                'title': o['title'],
-                'image': o['image']}
+        ic_blocks = get_sessionstore_ic_blocks(ic_blocks)
     else:
-        for slug, o in ic_blocks.items():
-            if not(ImageContentBlock.query
-                    .filter_by(slug=slug)
-                    .first()):
-                # If this model isn't currently saved to the DB,
-                # set its image now (could be a random sample) and save.
-                model = o['model']
-                model.image = placeholder_or_random_sample_image()
-
-                try:
-                    model.save()
-                except IntegrityError as e:
-                    db.session.rollback()
-                    raise e
-
-        for o in (
-            ImageContentBlock.query
-                .filter_by(active=True)
-                .all()):
-            ic_blocks[o.slug] = {
-                'title': o.title,
-                'image': o.image}
+        ic_blocks = get_db_ic_blocks(ic_blocks)
 
     if current_user.is_authenticated():
         for k in ic_blocks.keys():
@@ -191,58 +211,49 @@ def home():
 
             ic_blocks[k]['form'] = form
 
-    # Gallery items
-    gallery_limit = app.config['GALLERY_LIMIT']
+    return ic_blocks
+
+
+def get_default_gallery_items():
+    """Gets the default gallery items."""
+
+    default_gallery_items = GalleryItem.default_content()
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        gallery_count = len(session.get('gallery_item', []))
+        session['gallery_item'] = ['']
+
+        for o in default_gallery_items:
+            # If this model isn't currently saved to session storage,
+            # set its image and text content now (could be random
+            # samples) and save.
+            session['gallery_item'].append({
+                'title': o.title,
+                'image': placeholder_or_random_sample_image(),
+                'content': placeholder_or_random_sample_text(),
+                'date_taken': o.date_taken})
     else:
-        gallery_count = (
-            GalleryItem.query
-                       .filter_by(active=True)
-                       .count())
+        curr_weight = 0
 
-    if not gallery_count:
-        default_gallery_items = GalleryItem.default_content()
+        for o in default_gallery_items:
+            # If this model isn't currently saved to the DB,
+            # set its image and text content now (could be random
+            # samples) and save.
+            o.image = placeholder_or_random_sample_image()
+            o.content = placeholder_or_random_sample_text()
+            o.weight = curr_weight
 
-        if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-            session['gallery_item'] = ['']
+            try:
+                o.save()
+                curr_weight += 1
+            except IntegrityError as e:
+                db.session.rollback()
+                raise e
 
-            for o in default_gallery_items:
-                # If this model isn't currently saved to session storage,
-                # set its image and text content now (could be random
-                # samples) and save.
-                session['gallery_item'].append({
-                    'title': o.title,
-                    'image': placeholder_or_random_sample_image(),
-                    'content': placeholder_or_random_sample_text(),
-                    'date_taken': o.date_taken})
-        else:
-            curr_weight = 0
+    return default_gallery_items
 
-            for o in default_gallery_items:
-                # If this model isn't currently saved to the DB,
-                # set its image and text content now (could be random
-                # samples) and save.
-                o.image = placeholder_or_random_sample_image()
-                o.content = placeholder_or_random_sample_text()
-                o.weight = curr_weight
 
-                try:
-                    o.save()
-                    curr_weight += 1
-                except IntegrityError as e:
-                    db.session.rollback()
-                    raise e
-
-        gallery_count = len(default_gallery_items)
-
-    is_gallery_showmore = request.args.get('gallery_showmore', None) == '1'
-
-    is_gallery_showlimited = (
-        (not current_user.is_authenticated()) and
-        (not is_gallery_showmore) and
-        (gallery_count > gallery_limit))
+def get_gallery_items():
+    """Gets all gallery items."""
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
         if session.get('gallery_item') is None:
@@ -275,138 +286,61 @@ def home():
                        .filter_by(active=True)
                        .order_by(GalleryItem.weight))
 
-    if is_gallery_showlimited:
-        if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-            gallery_items = gallery_items[:gallery_limit]
-        else:
-            gallery_items = gallery_items.limit(gallery_limit)
+    return gallery_items
 
-    if not app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        gallery_items = gallery_items.all()
 
-    gallery_forms = {}
-    if current_user.is_authenticated():
-        for gi in gallery_items:
-            gallery_forms[gi.id] = {
-                'title': TextEditForm(content=gi.title),
-                'image': ImageEditForm(image=gi.image),
-                'content': LongTextEditForm(content=gi.content),
-                'date_taken': TextEditForm(content=gi.date_taken)}
+def get_default_events():
+    """Gets default events."""
 
-            if current_user.is_authenticated():
-                gallery_forms[gi.id]['delete'] = Form()
-
-    gi_add_form = current_user.is_authenticated() and Form() or None
-
-    gi_reorder_form = None
-
-    if current_user.is_authenticated():
-        if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-            items = [
-                {'identifier': i, 'weight': i-1}
-                for i, v in enumerate(session['gallery_item']) if v]
-        else:
-            items = [
-                {'identifier': gi.id, 'weight': gi.weight}
-                for gi in (
-                    GalleryItem.query
-                               .filter_by(active=True)
-                               .order_by(GalleryItem.weight).all())]
-
-        gi_reorder_form = ReorderForm(items=items, prefix='gallery_')
-
-    # Events
-    event_upcoming_limit = app.config['EVENT_UPCOMING_LIMIT']
+    default_events = Event.default_content()
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        event_upcoming_count = len([
-            o for o in session.get('event', [])
-            if (o and (
-                datetime.strptime(o['start_date'], '%Y-%m-%d').date()
-                >= date.today()))])
+        session['event'] = ['']
+
+        for o in default_events:
+            # If this model isn't currently saved to session
+            # storage, save it now.
+            session['event'].append({
+                'title': o.title,
+                'start_date': o.start_date.strftime('%Y-%m-%d'),
+                'end_date': (
+                    o.end_date
+                    and o.end_date.strftime('%Y-%m-%d')
+                    or ''),
+                'start_time': (
+                    o.start_time
+                    and o.start_time.strftime('%H:%M:%S')
+                    or ''),
+                'end_time': (
+                    o.end_time
+                    and o.end_time.strftime('%H:%M:%S')
+                    or ''),
+                'event_url': o.event_url,
+                'location_name': o.location_name,
+                'location_url': o.location_url})
     else:
-        event_upcoming_count = (
-            Event.query
-                 .filter_by(active=True)
-                 .filter(Event.start_date >= date.today())
-                 .count())
+        for o in default_events:
+            # If this model isn't currently saved to the DB,
+            # save it now.
+            try:
+                o.save()
+            except IntegrityError as e:
+                db.session.rollback()
+                raise e
 
-    event_past_limit = app.config['EVENT_PAST_LIMIT']
+    return default_events
 
-    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-        event_past_count = len([
-            o for o in session.get('event', [])
-            if (o and (
-                datetime.strptime(o['start_date'], '%Y-%m-%d').date()
-                < date.today()))])
-    else:
-        event_past_count = (
-            Event.query
-                 .filter_by(active=True)
-                 .filter(Event.start_date < date.today())
-                 .count())
 
-    if (not event_upcoming_count) and (not event_past_count):
-        default_events = Event.default_content()
+def get_events():
+    """Gets upcoming and past events."""
 
-        if app.config.get('USE_SESSIONSTORE_NOT_DB'):
-            session['event'] = ['']
-
-            for o in default_events:
-                # If this model isn't currently saved to session
-                # storage, save it now.
-                session['event'].append({
-                    'title': o.title,
-                    'start_date': o.start_date.strftime('%Y-%m-%d'),
-                    'end_date': (
-                        o.end_date
-                        and o.end_date.strftime('%Y-%m-%d')
-                        or ''),
-                    'start_time': (
-                        o.start_time
-                        and o.start_time.strftime('%H:%M:%S')
-                        or ''),
-                    'end_time': (
-                        o.end_time
-                        and o.end_time.strftime('%H:%M:%S')
-                        or ''),
-                    'event_url': o.event_url,
-                    'location_name': o.location_name,
-                    'location_url': o.location_url})
-        else:
-            for o in default_events:
-                # If this model isn't currently saved to the DB,
-                # save it now.
-                try:
-                    o.save()
-                except IntegrityError as e:
-                    db.session.rollback()
-                    raise e
-
-        event_upcoming_count = len([
-            o for o in default_events
-            if o.start_date >= date.today()])
-
-        event_past_count = len([
-            o for o in default_events
-            if o.start_date < date.today()])
-
-    is_events_showmore = (
-        request.args.get('events_showmore', None) == '1')
-
-    is_events_showlimited = (
-        (not current_user.is_authenticated()) and
-        (not is_events_showmore) and
-        (
-            (event_upcoming_count > event_upcoming_limit) or
-            (event_past_count > event_past_limit)))
+    events_upcoming = []
+    events_past = []
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
         if session.get('event') is None:
             session['event'] = ['']
 
-        events_upcoming = []
-        events_past = []
         for id, o in enumerate(session['event']):
             if o:
                 dt_now_str = datetime.now().strftime('%Y-%m-%d')
@@ -466,6 +400,141 @@ def home():
                  .order_by(Event.start_date.desc(),
                            Event.start_time.desc()))
 
+    return (events_upcoming, events_past)
+
+
+def get_gi_vars():
+    """Gets gallery item variables."""
+
+    gallery_limit = app.config['GALLERY_LIMIT']
+
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        gallery_count = len(session.get('gallery_item', []))
+    else:
+        gallery_count = (
+            GalleryItem.query
+                       .filter_by(active=True)
+                       .count())
+
+    if not gallery_count:
+        default_gallery_items = get_default_gallery_items()
+        gallery_count = len(default_gallery_items)
+
+    is_gallery_showmore = request.args.get('gallery_showmore', None) == '1'
+
+    is_gallery_showlimited = (
+        (not current_user.is_authenticated()) and
+        (not is_gallery_showmore) and
+        (gallery_count > gallery_limit))
+
+    gallery_items = get_gallery_items()
+
+    if is_gallery_showlimited:
+        if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+            gallery_items = gallery_items[:gallery_limit]
+        else:
+            gallery_items = gallery_items.limit(gallery_limit)
+
+    if not app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        gallery_items = gallery_items.all()
+
+    gallery_forms = {}
+    if current_user.is_authenticated():
+        for gi in gallery_items:
+            gallery_forms[gi.id] = {
+                'title': TextEditForm(content=gi.title),
+                'image': ImageEditForm(image=gi.image),
+                'content': LongTextEditForm(content=gi.content),
+                'date_taken': TextEditForm(content=gi.date_taken)}
+
+            if current_user.is_authenticated():
+                gallery_forms[gi.id]['delete'] = Form()
+
+    return (
+        gallery_items,
+        is_gallery_showlimited,
+        gallery_forms)
+
+
+def get_gi_reorder_form():
+    """Gets the gallery item re-ordering form."""
+
+    gi_reorder_form = None
+
+    if current_user.is_authenticated():
+        if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+            items = [
+                {'identifier': i, 'weight': i-1}
+                for i, v in enumerate(session['gallery_item']) if v]
+        else:
+            items = [
+                {'identifier': gi.id, 'weight': gi.weight}
+                for gi in (
+                    GalleryItem.query
+                               .filter_by(active=True)
+                               .order_by(GalleryItem.weight).all())]
+
+        gi_reorder_form = ReorderForm(items=items, prefix='gallery_')
+
+    return gi_reorder_form
+
+
+def get_event_vars():
+    """Gets event variables."""
+
+    event_upcoming_limit = app.config['EVENT_UPCOMING_LIMIT']
+
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        event_upcoming_count = len([
+            o for o in session.get('event', [])
+            if (o and (
+                datetime.strptime(o['start_date'], '%Y-%m-%d').date()
+                >= date.today()))])
+    else:
+        event_upcoming_count = (
+            Event.query
+                 .filter_by(active=True)
+                 .filter(Event.start_date >= date.today())
+                 .count())
+
+    event_past_limit = app.config['EVENT_PAST_LIMIT']
+
+    if app.config.get('USE_SESSIONSTORE_NOT_DB'):
+        event_past_count = len([
+            o for o in session.get('event', [])
+            if (o and (
+                datetime.strptime(o['start_date'], '%Y-%m-%d').date()
+                < date.today()))])
+    else:
+        event_past_count = (
+            Event.query
+                 .filter_by(active=True)
+                 .filter(Event.start_date < date.today())
+                 .count())
+
+    if (not event_upcoming_count) and (not event_past_count):
+        default_events = get_default_events()
+
+        event_upcoming_count = len([
+            o for o in default_events
+            if o.start_date >= date.today()])
+
+        event_past_count = len([
+            o for o in default_events
+            if o.start_date < date.today()])
+
+    is_events_showmore = (
+        request.args.get('events_showmore', None) == '1')
+
+    is_events_showlimited = (
+        (not current_user.is_authenticated()) and
+        (not is_events_showmore) and
+        (
+            (event_upcoming_count > event_upcoming_limit) or
+            (event_past_count > event_past_limit)))
+
+    events_upcoming, events_past = get_events()
+
     if is_events_showlimited:
         if app.config.get('USE_SESSIONSTORE_NOT_DB'):
             events_upcoming = events_upcoming[:event_upcoming_limit]
@@ -504,14 +573,44 @@ def home():
             if current_user.is_authenticated():
                 event_forms[event.id]['delete'] = Form()
 
+    return (
+        events_upcoming,
+        events_past,
+        is_events_showlimited,
+        event_forms)
+
+
+@blueprint.route("/")
+def home():
+    if current_user.is_authenticated() and (not current_user.active):
+        logout_user()
+
+    login_form = (not current_user.is_authenticated()) and LoginForm() or None
+
+    # Gallery items
+    (
+        gallery_items,
+        is_gallery_showlimited,
+        gallery_forms) = get_gi_vars()
+
+    gi_add_form = current_user.is_authenticated() and Form() or None
+    gi_reorder_form = get_gi_reorder_form()
+
+    # Events
+    (
+        events_upcoming,
+        events_past,
+        is_events_showlimited,
+        event_forms) = get_event_vars()
+
     event_add_form = current_user.is_authenticated() and Form() or None
 
     template_vars = dict(
         login_form=login_form,
-        contact_form=contact_form,
-        stc_blocks=stc_blocks,
-        rtc_blocks=rtc_blocks,
-        ic_blocks=ic_blocks,
+        contact_form=ContactForm(),
+        stc_blocks=get_stc_blocks(),
+        rtc_blocks=get_rtc_blocks(),
+        ic_blocks=get_ic_blocks(),
         gallery_items=gallery_items,
         is_gallery_showlimited=is_gallery_showlimited,
         gallery_forms=gallery_forms,

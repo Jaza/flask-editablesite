@@ -47,6 +47,13 @@ env/
 
 +# Flask project-specific stuff
 log
+.cache
+flask_editablesite/.cache
+flask_editablesite/tests/.cache
 flask_editablesite/static/uploads/*
 !flask_editablesite/static/uploads/placeholder.png
 flask_editablesite/static/cache
+flask_editablesite/static/css/admin.css
+flask_editablesite/static/css/common.css
+flask_editablesite/static/js/admin.js
+flask_editablesite/static/js/common.js

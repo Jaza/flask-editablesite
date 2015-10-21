@@ -10,7 +10,7 @@ python:
   - "3.4"
 
 install:
-  - - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then pip install importlib; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then pip install importlib; fi
   - "pip install -r requirements/dev.txt"
 
 before_script:

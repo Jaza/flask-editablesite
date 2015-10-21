@@ -16,6 +16,7 @@ before_script:
 
 script:
   - "coverage run manage.py test"
+  - flake8
 
 after_success:
   coveralls

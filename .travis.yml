@@ -16,7 +16,7 @@ before_script:
 
 script:
   - "coverage run manage.py test"
-  - flake8
+  - flake8 flask_editablesite
 
 after_success:
   coveralls

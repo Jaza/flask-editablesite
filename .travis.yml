@@ -15,9 +15,7 @@ before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
 
 script:
-  - "coverage erase"
   - "coverage run manage.py test"
-  - "coverage report --include=*flask_editablesite*"
 
 after_success:
   coveralls

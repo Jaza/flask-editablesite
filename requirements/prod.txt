@@ -63,4 +63,4 @@ clint==0.5.1
 
 # Dummy text
 Unidecode
-markovify==0.2.3
+markovify==0.2.4

@@ -22,6 +22,16 @@ This app is not a CMS. On the contrary, think of it as a proof-of-concept altern
 
 "Template" means that this is a sample app. It comes with a bunch of models that work out-of-the-box (e.g. text content block, image content block, gallery item, event). However, these are just a starting point: you can and should define your own models when building a real site. Same with the front-end templates: the home page layout and the CSS styles are just examples.
 
+|build-status| |coverage|
+
+.. |build-status| image:: https://travis-ci.org/Jaza/flask-editablesite.svg?branch=master
+   :target: https://travis-ci.org/Jaza/flask-editablesite
+   :alt: Travis CI status
+
+.. |coverage| image:: https://coveralls.io/repos/Jaza/flask-editablesite/badge.svg?branch=master
+   :target: https://coveralls.io/r/Jaza/flask-editablesite
+   :alt: Coverage status
+
 
 Quickstart
 ----------

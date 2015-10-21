@@ -2,7 +2,11 @@ from bs4 import BeautifulSoup
 import os
 import random
 import requests
-from urlparse import urlparse
+
+try:
+    from urllib.parse import urlparse  # python 3.x
+except ImportError:
+    from urlparse import urlparse  # python 2.x
 
 from flask import current_app as app
 

@@ -1,5 +1,9 @@
 import os
-from urlparse import urlparse
+
+try:
+    from urllib.parse import urlparse  # python 3.x
+except ImportError:
+    from urlparse import urlparse  # python 2.x
 
 from flask_script import Command, Option, prompt
 

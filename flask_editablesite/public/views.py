@@ -54,12 +54,13 @@ def load_user(id):
 def get_stc_blocks():
     """Gets short text blocks."""
 
-    stc_blocks = {
-        o.slug: {
-            'title': o.title,
-            'content': o.content,
-            'model': o}
-        for o in ShortTextContentBlock.default_content().values()}
+    stc_blocks = dict(
+        (
+            o.slug, {
+                'title': o.title,
+                'content': o.content,
+                'model': o})
+        for o in ShortTextContentBlock.default_content().values())
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
         for slug, o in session.get('short_text_content_block', {}).items():
@@ -90,12 +91,13 @@ def get_stc_blocks():
 def get_rtc_blocks():
     """Gets rich text blocks."""
 
-    rtc_blocks = {
-        o.slug: {
-            'title': o.title,
-            'content': o.content,
-            'model': o}
-        for o in RichTextContentBlock.default_content().values()}
+    rtc_blocks = dict(
+        (
+            o.slug, {
+                'title': o.title,
+                'content': o.content,
+                'model': o})
+        for o in RichTextContentBlock.default_content().values())
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
         for slug, o in session.get('rich_text_content_block', {}).items():
@@ -190,12 +192,13 @@ def get_db_ic_blocks(ic_blocks):
 def get_ic_blocks():
     """Gets image blocks."""
 
-    ic_blocks = {
-        o.slug: {
-            'title': o.title,
-            'image': o.image_or_placeholder,
-            'model': o}
-        for o in ImageContentBlock.default_content().values()}
+    ic_blocks = dict(
+        (
+            o.slug, {
+                'title': o.title,
+                'image': o.image_or_placeholder,
+                'model': o})
+        for o in ImageContentBlock.default_content().values())
 
     if app.config.get('USE_SESSIONSTORE_NOT_DB'):
         ic_blocks = get_sessionstore_ic_blocks(ic_blocks)

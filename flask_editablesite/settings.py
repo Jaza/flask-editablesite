@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import ast
 import os
-import pylibmc
+import pymemcache.client.base as memcached
 
 os_env = os.environ
 
@@ -23,7 +23,7 @@ class Config(object):
     SESSION_KEY_PREFIX = 'flask-editablesite-session:'
     SESSION_MEMCACHED = (
         os_env.get('FLASK_EDITABLESITE_SESSION_MEMCACHED', None)
-        and pylibmc.Client(
+        and memcached.Client(
             [os_env.get('FLASK_EDITABLESITE_SESSION_MEMCACHED', None)],
             binary=True)
         or None)

@@ -161,7 +161,7 @@
 </div>
 
 {% if gi_reorder_form %}
-<form class="form" method="post" action="{{ url_for('editable.reorder', model_name='gallery_item') }}" role="form">
+<form class="form" method="post" action="{{ url_for('editable.reorder', model_name='gallery_item') }}" id="gi-reorder" role="form">
 
   {{ gi_reorder_form.hidden_tag() }}
 

@@ -307,6 +307,43 @@ def test_home_event_add_visible(app, user, testapp):
     res = testapp.get(url_for('public.logout')).follow()
 
 
+def test_home_event_add_visible_sessionstore(app_sessionstore):
+    app = app_sessionstore
+    with app.test_request_context():
+        testapp = TestApp(app)
+        user = User.sessionstore_user()
+
+        # Goes to homepage
+        res = testapp.get("/")
+        # Fills out login form
+        form = res.forms['loginForm']
+        form['email'] = user.email
+        form['password'] = app.config['SESSIONSTORE_USER_PASSWORD']
+        # Submits
+        res = form.submit().follow()
+
+        assert (len(res.session['event']) - 1) == app.config['EVENT_NUM_DEFAULT_ITEMS']
+        assert (
+            len(
+                res.html.findAll('article', {'class': 'events-item'}))
+            == app.config['EVENT_NUM_DEFAULT_ITEMS'])
+
+        form = res.forms['event-add']
+
+        res = form.submit().follow()
+        assert (
+            (len(res.session['event']) - 1) == (
+                app.config['EVENT_NUM_DEFAULT_ITEMS'] + 1))
+        assert (
+            len(
+                res.html.findAll('article', {'class': 'events-item'}))
+            == (app.config['EVENT_NUM_DEFAULT_ITEMS'] + 1))
+
+        res.session['event'].pop()
+
+        res = testapp.get(url_for('public.logout')).follow()
+
+
 def test_home_event_delete_visible(app, user, testapp):
     # Goes to homepage
     res = testapp.get("/")
@@ -338,3 +375,104 @@ def test_home_event_delete_visible(app, user, testapp):
     res = form.submit().follow()
 
     res = testapp.get(url_for('public.logout')).follow()
+
+
+def test_home_event_delete_visible_sessionstore(app_sessionstore):
+    app = app_sessionstore
+    with app.test_request_context():
+        testapp = TestApp(app)
+        user = User.sessionstore_user()
+
+        # Goes to homepage
+        res = testapp.get("/")
+        # Fills out login form
+        form = res.forms['loginForm']
+        form['email'] = user.email
+        form['password'] = app.config['SESSIONSTORE_USER_PASSWORD']
+        # Submits
+        res = form.submit().follow()
+
+        assert (
+            (len(res.session['event']) - 1)
+            == app.config['EVENT_NUM_DEFAULT_ITEMS'])
+        assert (
+            len(
+                res.html.findAll('article', {'class': 'events-item'}))
+            == app.config['EVENT_NUM_DEFAULT_ITEMS'])
+
+        form = res.forms['event-delete-1']
+
+        res = form.submit().follow()
+        assert (
+            (len(res.session['event']) - 1) == (
+                app.config['EVENT_NUM_DEFAULT_ITEMS'] - 1))
+        assert (
+            len(
+                res.html.findAll('article', {'class': 'events-item'}))
+            == (app.config['EVENT_NUM_DEFAULT_ITEMS'] - 1))
+
+        form = res.forms['event-add']
+        res = form.submit().follow()
+
+        res = testapp.get(url_for('public.logout')).follow()
+
+
+def test_home_gallery_reorder_visible(app, user, testapp):
+    # Goes to homepage
+    res = testapp.get("/")
+    # Fills out login form
+    form = res.forms['loginForm']
+    form['email'] = user.email
+    form['password'] = 'myprecious'
+    # Submits
+    res = form.submit().follow()
+
+    form = res.forms['gi-reorder']
+    assert form['gallery_items-0-identifier'].value == '1'
+    assert form['gallery_items-0-weight'].value == '0'
+    assert form['gallery_items-1-identifier'].value == '2'
+    assert form['gallery_items-1-weight'].value == '1'
+
+    form['gallery_items-0-weight'] = '1'
+    form['gallery_items-1-weight'] = '0'
+
+    res = form.submit().follow()
+
+    form = res.forms['gi-reorder']
+    assert form['gallery_items-0-identifier'].value == '2'
+    assert form['gallery_items-0-weight'].value == '0'
+    assert form['gallery_items-1-identifier'].value == '1'
+    assert form['gallery_items-1-weight'].value == '1'
+
+
+def test_home_gallery_reorder_visible_sessionstore(app_sessionstore):
+    app = app_sessionstore
+    with app.test_request_context():
+        testapp = TestApp(app)
+        user = User.sessionstore_user()
+
+        # Goes to homepage
+        res = testapp.get("/")
+        # Fills out login form
+        form = res.forms['loginForm']
+        form['email'] = user.email
+        form['password'] = app.config['SESSIONSTORE_USER_PASSWORD']
+        # Submits
+        res = form.submit().follow()
+
+        form = res.forms['gi-reorder']
+        assert form['gallery_items-0-identifier'].value == '1'
+        assert form['gallery_items-0-weight'].value == '0'
+        assert form['gallery_items-1-identifier'].value == '2'
+        assert form['gallery_items-1-weight'].value == '1'
+
+        form['gallery_items-0-weight'] = '1'
+        form['gallery_items-1-weight'] = '0'
+
+        res = form.submit().follow()
+
+        form = res.forms['gi-reorder']
+        assert form['gallery_items-0-identifier'].value == '1'
+        assert form['gallery_items-0-weight'].value == '0'
+        assert form['gallery_items-1-identifier'].value == '2'
+        assert form['gallery_items-1-weight'].value == '1'

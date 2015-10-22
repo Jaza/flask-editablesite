@@ -4,7 +4,7 @@
 See: http://webtest.readthedocs.org/
 """
 import pytest
-from webtest import TestApp
+from flask_webtest import TestApp
 
 from flask import url_for
 

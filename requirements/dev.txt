@@ -6,6 +6,7 @@ pytest>=2.6.3
 coverage
 coveralls
 webtest
+flask-webtest
 factory-boy==2.5.1
 flake8
 

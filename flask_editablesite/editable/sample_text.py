@@ -59,10 +59,12 @@ def random_sample_text(num_sentences=3):
     sentences = []
     for i in range(num_sentences):
         s = text_model.make_sentence()
-        if is_decoding_needed:
-            s = s.decode('utf-8')
 
-        s = unidecode(s.strip())
-        sentences.append(s)
+        if s:
+            if is_decoding_needed:
+                s = s.decode('utf-8')
+
+            s = unidecode(s.strip())
+            sentences.append(s)
 
     return '<p>{0}</p>'.format(' '.join(sentences))

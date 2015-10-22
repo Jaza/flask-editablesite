@@ -4,7 +4,7 @@
 import os
 
 import pytest
-from webtest import TestApp
+from flask_webtest import TestApp
 
 from flask_editablesite.settings import TestConfig
 from flask_editablesite.app import create_app

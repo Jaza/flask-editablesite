@@ -31,10 +31,6 @@ def random_sample_text(num_sentences=3):
     is_decoding_needed = False
 
     if not text:
-        url = (
-    'https://raw.githubusercontent.com'
-    '/Jaza/flask-editablesite'
-    '/master/tests/sample-text-great-expectations.txt')
         url = random.choice(
             app.config['EDITABLE_SAMPLE_TEXT_SCRAPE_URLS'])
 

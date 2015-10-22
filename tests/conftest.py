@@ -24,6 +24,15 @@ def app():
     ctx.pop()
 
 
+class SessionStoreTestConfig(TestConfig):
+    USE_SESSIONSTORE_NOT_DB = True
+
+
+@pytest.fixture(scope='session')
+def app_sessionstore():
+    return create_app(SessionStoreTestConfig)
+
+
 @pytest.fixture(scope='session')
 def testapp(app):
     """A Webtest app."""

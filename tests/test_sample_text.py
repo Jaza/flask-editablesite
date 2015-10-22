@@ -30,6 +30,13 @@ def test_markovify_when_scrape_configured():
     with app.app_context():
         sample_text = placeholder_or_random_sample_text()
 
+        # Give markovify a few more tries, if it fails to generate
+        # text the first time.
+        i = 0
+        while i < 3 and (not sample_text):
+            sample_text = placeholder_or_random_sample_text()
+            i += 1
+
         assert sample_text is not None
         assert len(sample_text)
         assert sample_text != app.config['EDITABLE_PLACEHOLDER_TEXT']

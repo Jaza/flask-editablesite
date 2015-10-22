@@ -206,3 +206,135 @@ def test_home_event_starttime_update_visible(app, user, testapp):
         in res)
 
     res = testapp.get(url_for('public.logout')).follow()
+
+
+def test_home_event_starttime_update_visible_sessionstore(
+    app_sessionstore):
+    app = app_sessionstore
+    with app.test_request_context():
+        testapp = TestApp(app)
+        user = User.sessionstore_user()
+
+        # Goes to homepage
+        res = testapp.get("/")
+        # Fills out login form
+        form = res.forms['loginForm']
+        form['email'] = user.email
+        form['password'] = app.config['SESSIONSTORE_USER_PASSWORD']
+        # Submits
+        res = form.submit().follow()
+
+        event = res.session['event'][1]
+        dt_now_str = datetime.now().strftime('%Y-%m-%d')
+        old_start_time_str = ''
+
+        if (('start_time') in event) and event['start_time']:
+            old_start_time = (
+                datetime.strptime(
+                    dt_now_str + ' ' + event['start_time'],
+                    '%Y-%m-%d %H:%M:%S')
+                .time())
+            old_start_time_str = (old_start_time
+                .strftime('%H:%M'))
+
+        assert ((
+            '<input class="timepicker-enable" '
+            'id="event-start_time-1" name="content" '
+            'placeholder="Pick your start time" type="time" '
+            'value="{0}">').format(
+                old_start_time_str)
+            in res)
+
+        form = res.forms[
+            'time-pick-form-event-start_time-1']
+        dt_now = datetime.now()
+        dt_midnighttoday = datetime(dt_now.year, dt_now.month, dt_now.day)
+
+        rand_delta = timedelta(minutes=(15 * random.randrange(96)))
+        new_start_time = (dt_midnighttoday + rand_delta).time()
+        new_start_time_str = new_start_time.strftime('%H:%M')
+
+        i = 0
+        while i < 3 and new_start_time_str == old_start_time_str:
+            rand_delta = timedelta(minutes=(15 * random.randrange(96)))
+            new_start_time = (dt_midnighttoday + rand_delta).time()
+            new_start_time_str = new_start_time.strftime('%H:%M')
+
+        form['content'] = new_start_time_str
+
+        res = form.submit().follow()
+        assert ((
+            '<input class="timepicker-enable" '
+            'id="event-start_time-1" name="content" '
+            'placeholder="Pick your start time" type="time" '
+            'value="{0}">').format(
+                new_start_time_str)
+            in res)
+
+        res = testapp.get(url_for('public.logout')).follow()
+
+
+def test_home_event_add_visible(app, user, testapp):
+    # Goes to homepage
+    res = testapp.get("/")
+    # Fills out login form
+    form = res.forms['loginForm']
+    form['email'] = user.email
+    form['password'] = 'myprecious'
+    # Submits
+    res = form.submit().follow()
+
+    assert Event.query.count() == app.config['EVENT_NUM_DEFAULT_ITEMS']
+    assert (
+        len(
+            res.html.findAll('article', {'class': 'events-item'}))
+        == app.config['EVENT_NUM_DEFAULT_ITEMS'])
+
+    form = res.forms['event-add']
+
+    res = form.submit().follow()
+    assert (
+        Event.query.count() == (
+            app.config['EVENT_NUM_DEFAULT_ITEMS'] + 1))
+    assert (
+        len(
+            res.html.findAll('article', {'class': 'events-item'}))
+        == (app.config['EVENT_NUM_DEFAULT_ITEMS'] + 1))
+
+    event = Event.query.order_by(Event.id.desc()).first()
+    event.delete()
+
+    res = testapp.get(url_for('public.logout')).follow()
+
+
+def test_home_event_delete_visible(app, user, testapp):
+    # Goes to homepage
+    res = testapp.get("/")
+    # Fills out login form
+    form = res.forms['loginForm']
+    form['email'] = user.email
+    form['password'] = 'myprecious'
+    # Submits
+    res = form.submit().follow()
+
+    assert Event.query.count() == app.config['EVENT_NUM_DEFAULT_ITEMS']
+    assert (
+        len(
+            res.html.findAll('article', {'class': 'events-item'}))
+        == app.config['EVENT_NUM_DEFAULT_ITEMS'])
+
+    form = res.forms['event-delete-1']
+
+    res = form.submit().follow()
+    assert (
+        Event.query.count() == (
+            app.config['EVENT_NUM_DEFAULT_ITEMS'] - 1))
+    assert (
+        len(
+            res.html.findAll('article', {'class': 'events-item'}))
+        == (app.config['EVENT_NUM_DEFAULT_ITEMS'] - 1))
+
+    form = res.forms['event-add']
+    res = form.submit().follow()
+
+    res = testapp.get(url_for('public.logout')).follow()

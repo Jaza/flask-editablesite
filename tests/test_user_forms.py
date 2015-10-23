@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-import pytest
 
 from flask_editablesite.public.forms import LoginForm
-from .factories import UserFactory
 
 
 def test_login_success(user):

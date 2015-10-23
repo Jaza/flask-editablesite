@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Test that content blocks show as expected."""
 
-import pytest
-
 from flask import url_for
 
 from flask_editablesite.extensions import thumb

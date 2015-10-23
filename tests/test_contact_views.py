@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Test using the contact form."""
 
-import pytest
-
 
 def test_contactform_alert_visible(db, testapp):
     # Goes to homepage

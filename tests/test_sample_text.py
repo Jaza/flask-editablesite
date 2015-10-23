@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Test the sample text generation."""
 
-import pytest
-
 from flask_editablesite.app import create_app
 from flask_editablesite.settings import TestConfig
 
@@ -21,7 +19,7 @@ class TextScrapeTestConfig(TestConfig):
         (
             'https://raw.githubusercontent.com'
             '/Jaza/flask-editablesite'
-            '/master/tests/sample-text-great-expectations.txt'),]
+            '/master/tests/sample-text-great-expectations.txt'), ]
 
 
 def test_markovify_when_scrape_configured():

@@ -3,13 +3,12 @@
 
 from datetime import datetime, timedelta
 import os
-import pytest
 import random
 import string
 from webtest import Upload
 from flask_webtest import TestApp
 
-from flask import (session, url_for)
+from flask import url_for
 
 from flask_editablesite.extensions import thumb
 from flask_editablesite.contentblock.models import (
@@ -44,7 +43,7 @@ def test_home_textcontentblock_update_visible(app, user, testapp):
 
 
 def test_home_textcontentblock_update_visible_sessionstore(
-    app_sessionstore):
+        app_sessionstore):
     app = app_sessionstore
     with app.test_request_context():
         testapp = TestApp(app)
@@ -106,7 +105,7 @@ def test_home_imagecontentblock_update_visible(app, user, testapp):
     old_image_file = open(old_image_filepath, 'rb')
 
     new_image_filename = ''.join(
-            random.choice(string.ascii_lowercase) for _ in range(10))
+        random.choice(string.ascii_lowercase) for _ in range(10))
     new_image_filename += '.jpg'
 
     form['image'] = Upload(
@@ -119,8 +118,8 @@ def test_home_imagecontentblock_update_visible(app, user, testapp):
 
     icb = (
         ImageContentBlock.query
-            .filter_by(slug='site-logo')
-            .one())
+                         .filter_by(slug='site-logo')
+                         .one())
 
     new_image_filepath = '{0}/{1}'.format(
         app.config['MEDIA_FOLDER'],
@@ -144,7 +143,7 @@ def test_home_imagecontentblock_update_visible(app, user, testapp):
 
 
 def test_home_imagecontentblock_update_visible_sessionstore(
-    app_sessionstore):
+        app_sessionstore):
     app = app_sessionstore
     with app.test_request_context():
         testapp = TestApp(app)
@@ -181,7 +180,7 @@ def test_home_imagecontentblock_update_visible_sessionstore(
         old_image_file = open(old_image_filepath, 'rb')
 
         new_image_filename = ''.join(
-                random.choice(string.ascii_lowercase) for _ in range(10))
+            random.choice(string.ascii_lowercase) for _ in range(10))
         new_image_filename += '.jpg'
 
         form['image'] = Upload(
@@ -191,7 +190,6 @@ def test_home_imagecontentblock_update_visible_sessionstore(
         old_image_file.close()
 
         res = form.submit().follow()
-
 
         assert (
             (
@@ -247,7 +245,7 @@ def test_home_event_startdate_update_visible(app, user, testapp):
 
 
 def test_home_event_startdate_update_visible_sessionstore(
-    app_sessionstore):
+        app_sessionstore):
     app = app_sessionstore
     with app.test_request_context():
         testapp = TestApp(app)
@@ -265,8 +263,7 @@ def test_home_event_startdate_update_visible_sessionstore(
         event = res.session['event'][1]
         old_start_date = datetime.strptime(
             event['start_date'], '%Y-%m-%d')
-        old_start_date_str = (old_start_date
-            .strftime('%d %b %Y'))
+        old_start_date_str = old_start_date.strftime('%d %b %Y')
         assert ((
             '<input class="datepicker-enable" '
             'id="event-start_date-1" name="content" '
@@ -347,7 +344,7 @@ def test_home_event_starttime_update_visible(app, user, testapp):
 
 
 def test_home_event_starttime_update_visible_sessionstore(
-    app_sessionstore):
+        app_sessionstore):
     app = app_sessionstore
     with app.test_request_context():
         testapp = TestApp(app)
@@ -372,8 +369,7 @@ def test_home_event_starttime_update_visible_sessionstore(
                     dt_now_str + ' ' + event['start_time'],
                     '%Y-%m-%d %H:%M:%S')
                 .time())
-            old_start_time_str = (old_start_time
-                .strftime('%H:%M'))
+            old_start_time_str = old_start_time.strftime('%H:%M')
 
         assert ((
             '<input class="timepicker-enable" '
@@ -460,7 +456,8 @@ def test_home_event_add_visible_sessionstore(app_sessionstore):
         # Submits
         res = form.submit().follow()
 
-        assert (len(res.session['event']) - 1) == app.config['EVENT_NUM_DEFAULT_ITEMS']
+        assert (len(res.session['event']) - 1) == app.config[
+            'EVENT_NUM_DEFAULT_ITEMS']
         assert (
             len(
                 res.html.findAll('article', {'class': 'events-item'}))

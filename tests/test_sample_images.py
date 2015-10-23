@@ -2,7 +2,6 @@
 """Test the sample image selection."""
 
 import os
-import pytest
 
 from flask_editablesite.app import create_app
 from flask_editablesite.settings import TestConfig
@@ -14,7 +13,8 @@ from flask_editablesite.editable.sample_images import (
 
 def test_placeholder_when_no_sample_images_configured(app):
     sample_image = placeholder_or_random_sample_image()
-    assert sample_image == app.config['EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH']
+    assert sample_image == app.config[
+        'EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH']
 
 
 class ImageScrapeTestConfig(TestConfig):

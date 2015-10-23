@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Functional tests using WebTest.
+"""Testing of user views."""
 
-See: http://webtest.readthedocs.org/
-"""
-import pytest
 from flask_webtest import TestApp
 
 from flask import url_for
 
 from flask_editablesite.user.models import User
-from .factories import UserFactory
 
 
 def test_login_returns_200(user, testapp):

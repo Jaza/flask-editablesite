@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Defines fixtures available to all tests."""
 
-import os
-
 import pytest
 from flask_webtest import TestApp
 
@@ -52,10 +50,10 @@ def db(app):
     _db.session.remove()
     _db.drop_all()
 
-    ## This dispose() call is needed to avoid the DB locking
-    ## between tests.
-    ## Thanks to:
-    ## http://stackoverflow.com/a/18293157/2066849
+    # This dispose() call is needed to avoid the DB locking
+    # between tests.
+    # Thanks to:
+    # http://stackoverflow.com/a/18293157/2066849
     _db.get_engine(_db.app).dispose()
 
 

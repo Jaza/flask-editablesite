@@ -3,8 +3,6 @@
 
 import datetime as dt
 
-import pytest
-
 from flask_editablesite.user.models import User
 from .factories import UserFactory
 
@@ -18,6 +16,7 @@ def test_user_get_by_id():
 
     user.delete()
 
+
 def test_user_created_at_defaults_to_datetime():
     user = User(email='foo@bar.com')
     user.save()
@@ -26,12 +25,14 @@ def test_user_created_at_defaults_to_datetime():
 
     user.delete()
 
+
 def test_user_password_is_nullable():
     user = User(email='foo@bar.com')
     user.save()
     assert user.password is None
 
     user.delete()
+
 
 def test_user_factory(db):
     user = UserFactory(password="myprecious")
@@ -41,13 +42,15 @@ def test_user_factory(db):
     assert user.active is True
     assert user.check_password('myprecious')
 
+
 def test_user_check_password():
     user = User.create(email="foo@bar.com",
-                password="foobarbaz123")
+                       password="foobarbaz123")
     assert user.check_password('foobarbaz123') is True
     assert user.check_password("barfoobaz") is False
 
     user.delete()
+
 
 def test_user_full_name():
     user = UserFactory(first_name="Foo", last_name="Bar")

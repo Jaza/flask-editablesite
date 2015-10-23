@@ -2,14 +2,18 @@
 """Test editable view routes."""
 
 from datetime import datetime, timedelta
+import os
 import pytest
 import random
+import string
+from webtest import Upload
 from flask_webtest import TestApp
 
 from flask import (session, url_for)
 
+from flask_editablesite.extensions import thumb
 from flask_editablesite.contentblock.models import (
-    ShortTextContentBlock,)
+    ShortTextContentBlock, ImageContentBlock)
 from flask_editablesite.event.models import Event
 from flask_editablesite.user.models import User
 
@@ -66,6 +70,140 @@ def test_home_textcontentblock_update_visible_sessionstore(
         res = form.submit().follow()
         assert new_byline in res
         assert not(default_content['site-byline'].content in res)
+
+        res = testapp.get(url_for('public.logout')).follow()
+
+
+def test_home_imagecontentblock_update_visible(app, user, testapp):
+    # Goes to homepage
+    res = testapp.get("/")
+    # Fills out login form
+    form = res.forms['loginForm']
+    form['email'] = user.email
+    form['password'] = 'myprecious'
+    # Submits
+    res = form.submit().follow()
+
+    assert (
+        (
+            '<img class="img-responsive img-circle img-lesswidth" '
+            'src="{0}" alt="{1}">').format(
+                url_for('static', filename=thumb.thumbnail(
+                    app.config[
+                        'EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'],
+                    size='256x256',
+                    crop='fit')),
+                app.config['SITE_NAME'])
+        in res.text)
+
+    form = res.forms[
+        'image-form-image_content_block-image-site-logo']
+
+    old_image_filepath = '{0}/{1}'.format(
+        app.config['MEDIA_FOLDER'],
+        app.config['EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'])
+    assert os.path.exists(old_image_filepath)
+    old_image_file = open(old_image_filepath, 'rb')
+
+    new_image_filename = ''.join(
+            random.choice(string.ascii_lowercase) for _ in range(10))
+    new_image_filename += '.jpg'
+
+    form['image'] = Upload(
+        new_image_filename,
+        old_image_file.read(),
+        'image/jpeg')
+    old_image_file.close()
+
+    res = form.submit().follow()
+
+    icb = (
+        ImageContentBlock.query
+            .filter_by(slug='site-logo')
+            .one())
+
+    new_image_filepath = '{0}/{1}'.format(
+        app.config['MEDIA_FOLDER'],
+        icb.image)
+    assert os.path.exists(new_image_filepath)
+
+    assert (
+        (
+            '<img class="img-responsive img-circle img-lesswidth" '
+            'src="{0}" alt="{1}">').format(
+                url_for('static', filename=thumb.thumbnail(
+                    icb.image,
+                    size='256x256',
+                    crop='fit')),
+                app.config['SITE_NAME'])
+        in res.text)
+
+    os.remove(new_image_filepath)
+
+    res = testapp.get(url_for('public.logout')).follow()
+
+
+def test_home_imagecontentblock_update_visible_sessionstore(
+    app_sessionstore):
+    app = app_sessionstore
+    with app.test_request_context():
+        testapp = TestApp(app)
+        user = User.sessionstore_user()
+
+        # Goes to homepage
+        res = testapp.get("/")
+        # Fills out login form
+        form = res.forms['loginForm']
+        form['email'] = user.email
+        form['password'] = app.config['SESSIONSTORE_USER_PASSWORD']
+        # Submits
+        res = form.submit().follow()
+
+        assert (
+            (
+                '<img class="img-responsive img-circle img-lesswidth" '
+                'src="{0}" alt="{1}">').format(
+                    url_for('static', filename=thumb.thumbnail(
+                        app.config[
+                            'EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'],
+                        size='256x256',
+                        crop='fit')),
+                    app.config['SITE_NAME'])
+            in res.text)
+
+        form = res.forms[
+            'image-form-image_content_block-image-site-logo']
+
+        old_image_filepath = '{0}/{1}'.format(
+            app.config['MEDIA_FOLDER'],
+            app.config['EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'])
+        assert os.path.exists(old_image_filepath)
+        old_image_file = open(old_image_filepath, 'rb')
+
+        new_image_filename = ''.join(
+                random.choice(string.ascii_lowercase) for _ in range(10))
+        new_image_filename += '.jpg'
+
+        form['image'] = Upload(
+            new_image_filename,
+            old_image_file.read(),
+            'image/jpeg')
+        old_image_file.close()
+
+        res = form.submit().follow()
+
+
+        assert (
+            (
+                '<img class="img-responsive img-circle img-lesswidth" '
+                'src="{0}" alt="{1}">').format(
+                    url_for('static', filename=thumb.thumbnail(
+                        app.config[
+                            'EDITABLE_PLACEHOLDER_IMAGE_RELATIVE_PATH'],
+                        size='256x256',
+                        crop='fit')),
+                    app.config['SITE_NAME'])
+            in res.text)
 
         res = testapp.get(url_for('public.logout')).follow()
 

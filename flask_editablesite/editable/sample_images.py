@@ -11,9 +11,27 @@ except ImportError:
 from flask import current_app as app
 
 
+def normalize_link(link, domain, dirpath):
+    if link.startswith('/'):
+        link = domain + link
+    elif not(link.startswith('http')):
+        link = '{0}{1}/{2}'.format(
+            domain,
+            dirpath,
+            link)
+
+    return link
+
+
 def scrape_sample_images(url, parentelname=None, parentelclass=None,
                          onlyfirstel=False):
     """Scrapes the given URL for sample image links."""
+
+    # Thanks to:
+    # http://stackoverflow.com/a/9626596/2066849
+    parsed_url = urlparse(url)
+    domain = '{url.scheme}://{url.netloc}'.format(url=parsed_url)
+    dirpath = os.path.dirname(parsed_url.path)
 
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'lxml')
@@ -28,13 +46,19 @@ def scrape_sample_images(url, parentelname=None, parentelclass=None,
         for parent_el in soup.find_all(parentelname, **soup_kwargs):
             if onlyfirstel:
                 link = next(iter(parent_el.find_all('a'))).get('href')
-                hrefs.append(link)
+                hrefs.append(normalize_link(link, domain, dirpath))
             else:
                 for link in parent_el.find_all('a'):
-                    hrefs.append(link.get('href'))
+                    hrefs.append(normalize_link(
+                        link.get('href'),
+                        domain,
+                        dirpath))
     else:
         for link in soup.find_all('a'):
-            hrefs.append(link.get('href'))
+            hrefs.append(normalize_link(
+                link.get('href'),
+                domain,
+                dirpath))
 
     return hrefs
 
